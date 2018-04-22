@@ -18,6 +18,10 @@
 #  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 #  http://www.gnu.org/copyleft/gpl.html
 
+
+
+export EGL_PLATFORM="drm"
+
 APP=@APP_NAME@
 bin_name=@APP_NAME_LC@
 SAVED_ARGS="$@"
