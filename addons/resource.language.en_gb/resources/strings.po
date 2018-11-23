@@ -17881,6 +17881,11 @@ msgctxt "#36050"
 msgid "On start"
 msgstr ""
 
+#: system/peripherals.xml
+msgctxt "#36060"
+msgid "Device name on CEC bus"
+msgstr ""
+
 #empty strings from id 36051 to 36098
 
 #: system/settings/settings.xml
