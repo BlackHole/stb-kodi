@@ -12,14 +12,14 @@
 
 #include "threads/CriticalSection.h"
 
-#if defined(TARGET_POSIX) && !defined(TARGET_DARWIN) && !defined(TARGET_FREEBSD) && !defined(TARGET_ANDROID) && !defined(__UCLIBC__)
-#define _file _fileno
-#elif defined(__UCLIBC__)
-#define _file __filedes
-#endif
+//#if defined(TARGET_POSIX) && !defined(TARGET_DARWIN) && !defined(TARGET_FREEBSD) && !defined(TARGET_ANDROID) && !defined(__UCLIBC__)
+//#define _file _fileno
+//#elif defined(__UCLIBC__)
+//#define _file __filedes
+//#endif
 
 #define MAX_EMULATED_FILES    50
-#define FILE_WRAPPER_OFFSET   0x00000200
+//#define FILE_WRAPPER_OFFSET   0x00000200
 
 namespace XFILE
 {
@@ -31,9 +31,7 @@ typedef struct stEmuFileObject
   XFILE::CFile*  file_xbmc;
   CCriticalSection *file_lock;
   int mode;
-  //Stick this last to avoid 3-7 bytes of padding
-  bool    used;
-  int     fd;
+  int fd;
 } EmuFileObject;
 
 class CEmuFileWrapper
@@ -48,22 +46,22 @@ public:
   void CleanUp();
 
   EmuFileObject* RegisterFileObject(XFILE::CFile* pFile);
+  void UnRegisterFileObject(EmuFileObject*, bool free_file);
   void UnRegisterFileObjectByDescriptor(int fd);
   void UnRegisterFileObjectByStream(FILE* stream);
   void LockFileObjectByDescriptor(int fd);
   bool TryLockFileObjectByDescriptor(int fd);
   void UnlockFileObjectByDescriptor(int fd);
   EmuFileObject* GetFileObjectByDescriptor(int fd);
+  int GetDescriptorByFileObject(EmuFileObject*);
   EmuFileObject* GetFileObjectByStream(FILE* stream);
+  FILE* GetStreamByFileObject(EmuFileObject*);
   XFILE::CFile* GetFileXbmcByDescriptor(int fd);
   XFILE::CFile* GetFileXbmcByStream(FILE* stream);
-  static int GetDescriptorByStream(FILE* stream);
+  int GetDescriptorByStream(FILE* stream);
   FILE* GetStreamByDescriptor(int fd);
-  static constexpr bool DescriptorIsEmulatedFile(int fd)
-  {
-    return fd >= FILE_WRAPPER_OFFSET && fd < FILE_WRAPPER_OFFSET + MAX_EMULATED_FILES;
-  }
-  static bool StreamIsEmulatedFile(FILE* stream);
+  bool DescriptorIsEmulatedFile(int fd);
+  bool StreamIsEmulatedFile(FILE* stream);
 private:
   EmuFileObject m_files[MAX_EMULATED_FILES];
   CCriticalSection m_criticalSection;

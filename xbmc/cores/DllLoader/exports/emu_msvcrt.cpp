@@ -38,6 +38,7 @@
 #include <fcntl.h>
 #include <time.h>
 #include <signal.h>
+#include <paths.h>
 #ifdef TARGET_POSIX
 #include "PlatformDefs.h" // for __stat64
 #include "XFileUtils.h"
@@ -466,13 +467,10 @@ extern "C"
     EmuFileObject* o = g_emuFileWrapper.GetFileObjectByDescriptor(fd);
     if (o)
     {
-      if(!o->used)
-        return NULL;
-
       int nmode = convert_fmode(mode);
       if( (o->mode & nmode) != nmode)
         CLog::Log(LOGWARNING, "dll_fdopen - mode 0x%x differs from fd mode 0x%x", nmode, o->mode);
-      return reinterpret_cast<FILE*>(o);
+      return g_emuFileWrapper.GetStreamByFileObject(o);
     }
     else if (!IS_STD_DESCRIPTOR(fd))
     {
@@ -535,8 +533,8 @@ extern "C"
         return -1;
       }
       object->mode = iMode;
-      FILE* f = reinterpret_cast<FILE*>(object);
-      return g_emuFileWrapper.GetDescriptorByStream(f);
+      //FILE* f = reinterpret_cast<FILE*>(object);
+      return g_emuFileWrapper.GetDescriptorByFileObject(object);
     }
     delete pFile;
     return -1;
@@ -1480,7 +1478,7 @@ extern "C"
     int ret;
 
     ret = dll_fgetpos64(stream, &tmpPos);
-#if !defined(TARGET_POSIX) || defined(TARGET_DARWIN) || defined(TARGET_FREEBSD) || defined(TARGET_ANDROID)
+#if !defined(__GLIBC__) || defined(TARGET_DARWIN) || defined(TARGET_FREEBSD) || defined(TARGET_ANDROID)
     *pos = (fpos_t)tmpPos;
 #else
     pos->__pos = (off_t)tmpPos.__pos;
@@ -1493,8 +1491,9 @@ extern "C"
     CFile* pFile = g_emuFileWrapper.GetFileXbmcByStream(stream);
     if (pFile != NULL)
     {
-#if !defined(TARGET_POSIX) || defined(TARGET_DARWIN) || defined(TARGET_FREEBSD) || defined(TARGET_ANDROID)
-      *pos = pFile->GetPosition();
+#if !defined(__GLIBC__) || defined(TARGET_DARWIN) || defined(TARGET_FREEBSD) || defined(TARGET_ANDROID)
+      uint64_t *ppos = (uint64_t *) pos;
+      *ppos = pFile->GetPosition();
 #else
       pos->__pos = pFile->GetPosition();
 #endif
@@ -1509,8 +1508,9 @@ extern "C"
     int fd = g_emuFileWrapper.GetDescriptorByStream(stream);
     if (fd >= 0)
     {
-#if !defined(TARGET_POSIX) || defined(TARGET_DARWIN) || defined(TARGET_FREEBSD) || defined(TARGET_ANDROID)
-      if (dll_lseeki64(fd, *pos, SEEK_SET) >= 0)
+#if !defined(__GLIBC__) || defined(TARGET_DARWIN) || defined(TARGET_FREEBSD) || defined(TARGET_ANDROID)
+      const uint64_t *ppos = (const uint64_t *) pos;
+      if (dll_lseeki64(fd, *ppos, SEEK_SET) >= 0)
 #else
       if (dll_lseeki64(fd, (__off64_t)pos->__pos, SEEK_SET) >= 0)
 #endif
@@ -1532,7 +1532,7 @@ extern "C"
     if (fd >= 0)
     {
       fpos64_t tmpPos;
-#if !defined(TARGET_POSIX) || defined(TARGET_DARWIN) || defined(TARGET_FREEBSD) || defined(TARGET_ANDROID)
+#if !defined(__GLIBC__) || defined(TARGET_DARWIN) || defined(TARGET_FREEBSD) || defined(TARGET_ANDROID)
       tmpPos= *pos;
 #else
       tmpPos.__pos = (off64_t)(pos->__pos);
