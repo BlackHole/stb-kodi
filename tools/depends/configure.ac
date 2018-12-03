@@ -173,13 +173,13 @@ platform_cc=gcc
 platform_cxx=g++
 
 case $build in
-  arm*-*-linux-gnu*|arm*-*-linux-uclibc*)
+  arm*-*-linux-gnu*|arm*-*-linux-uclibc*|arm*-*-linux-musl*)
     build_os="linux"
   ;;
-  *i686*-linux-gnu*|i*86*-*-linux-uclibc*)
+  *i686*-linux-gnu*|i*86*-*-linux-uclibc*|i*86*-*-linux-musl*)
     build_os="linux"
   ;;
-  x86_64*-linux-gnu*|x86_64-*-linux-uclibc*)
+  x86_64*-linux-gnu*|x86_64-*-linux-uclibc*|x86_64-*-linux-musl*)
     build_os="linux"
   ;;
   *darwin*)
@@ -233,7 +233,7 @@ case $host in
     #android builds are always cross
     cross_compiling="yes"
   ;;
-  arm*-*-linux-gnu*|arm*-*-linux-uclibc*|aarch64*-*-linux-gnu*|aarch*-*-linux-be*)
+  arm*-*-linux-gnu*|arm*-*-linux-uclibc*|arm*-*-linux-musl*|aarch64*-*-linux-gnu*|aarch*-*-linux-be*|aarch64*-*-linux-musl*)
     if test "x$use_cpu" = "xauto"; then
       use_cpu=$host_cpu
     fi
@@ -244,7 +244,18 @@ case $host in
     platform_cxxflags="$platform_cflags"
     platform_os="linux"
   ;;
-  *i686*-linux-gnu*|i*86*-*-linux-uclibc*|x86_64*-linux-gnu*|x86_64-*-linux-uclibc*)
+  mips*-*-linux-gnu*|mips*-*-linux-uclibc*|mips*-*-linux-musl*)
+    if test "x$use_cpu" = "xauto"; then
+      use_cpu=$host_cpu
+    fi
+    use_toolchain="${use_toolchain:-/usr}"
+    platform_cflags="-fPIC -DPIC"
+    optimize_flags="-O2"
+    platform_ldflags="-Wl,-rpath-link=$prefix/$deps_dir/lib"
+    platform_cxxflags="$platform_cflags"
+    platform_os="linux"
+  ;;
+  *i686*-linux-gnu*|i*86*-*-linux-uclibc*|i*86*-*-linux-musl*|x86_64*-linux-gnu*|x86_64-*-linux-uclibc*|x86_64-*-linux-musl*)
     use_cpu=$host_cpu
     use_toolchain="${use_toolchain:-/usr}"
     platform_cflags="-fPIC -DPIC"
