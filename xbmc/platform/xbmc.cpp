@@ -8,6 +8,11 @@
 
 #include "Application.h"
 
+#if defined(TARGET_XCORE)
+#include <v3dplatform.h>
+V3D_PlatformHandle g_v3dPlatformHandle;
+#endif
+
 #ifdef TARGET_RASPBERRY_PI
 #include "platform/linux/RBP.h"
 #endif
@@ -35,6 +40,10 @@ extern "C" int XBMC_Run(bool renderGUI, const CAppParamParser &params)
     CMessagePrinter::DisplayError("ERROR: Unable to create application. Exiting");
     return status;
   }
+  
+#if defined(TARGET_XCORE)
+  V3D_RegisterDisplayPlatform(&g_v3dPlatformHandle, NULL);
+#endif
 
 #ifdef TARGET_RASPBERRY_PI
   if(!g_RBP.Initialize())

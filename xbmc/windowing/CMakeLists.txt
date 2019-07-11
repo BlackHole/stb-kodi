@@ -15,4 +15,8 @@ if(CORE_PLATFORM_NAME_LC STREQUAL rbpi)
   add_subdirectory(rpi)
 endif()
 
+if(CORE_PLATFORM_NAME_LC STREQUAL vuplus)
+  add_subdirectory(vuplus)
+endif()
+
 core_add_library(windowing)

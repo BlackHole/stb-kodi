@@ -80,4 +80,43 @@ fi
 if test "$target_platform" = "target_raspberry_pi" ; then
   AC_SUBST(ARCH_DEFINES, "-DTARGET_POSIX -DTARGET_LINUX -D_LINUX -D_ARMEL -DTARGET_RASPBERRY_PI")
 fi
+
+if test "$target_videoplatform" = "target_xcore" ; then
+  AC_SUBST(ARCH_DEFINES, "-DTARGET_POSIX -DTARGET_LINUX -D_LINUX -DTARGET_STB -DTARGET_STB_EXTEND -DTARGET_V3D -DTARGET_XCORE")
+fi
+
+if test "$target_videoplatform" = "target_v3dnxpl" ; then
+  AC_SUBST(ARCH_DEFINES, "-DTARGET_POSIX -DTARGET_LINUX -D_LINUX -DTARGET_STB -DTARGET_STB_EXTEND -DTARGET_V3D -DTARGET_V3DNXPL")
+fi
+
+if test "$target_videoplatform" = "target_dreambox" ; then
+  AC_SUBST(ARCH_DEFINES, "-DTARGET_POSIX -DTARGET_LINUX -D_LINUX -DTARGET_STB -DTARGET_STB_EXTEND -DTARGET_V3D -DTARGET_DREAMBOX")
+fi
+
+if test "$target_videoplatform_arch" = "target_vuplus_arm" ; then
+  AC_SUBST(ARCH_DEFINES, "-DTARGET_POSIX -DTARGET_LINUX -D_LINUX -DTARGET_STB -DTARGET_STB_EXTEND -DTARGET_V3D -DTARGET_VUPLUS -DTARGET_VUPLUS_ARM")
+fi
+
+if test "$target_videoplatform_arch" = "target_vuplus_mipsel" ; then
+  AC_SUBST(ARCH_DEFINES, "-DTARGET_POSIX -DTARGET_LINUX -D_LINUX -DTARGET_STB -DTARGET_STB_EXTEND -DTARGET_V3D -DTARGET_VUPLUS -DTARGET_VUPLUS_MIPSEL")
+fi
+
+if test "$target_videoplatform" = "target_nextv" ; then
+  AC_SUBST(ARCH_DEFINES, "-DTARGET_POSIX -DTARGET_LINUX -D_LINUX -DTARGET_STB -DTARGET_STB_EXTEND -DTARGET_V3D -DTARGET_NEXTV")
+fi
+
+if test "$target_videoplatform" = "target_dags" ; then
+  AC_SUBST(ARCH_DEFINES, "-DTARGET_POSIX -DTARGET_LINUX -D_LINUX -DTARGET_STB -DTARGET_STB_EXTEND -DTARGET_V3D -DTARGET_DAGS")
+fi
+
+if test "$target_videoplatform" = "target_GB" ; then
+  AC_SUBST(ARCH_DEFINES, "-DTARGET_POSIX -DTARGET_LINUX -D_LINUX -DTARGET_STB -DTARGET_STB_EXTEND -DTARGET_V3D -DTARGET_GB")
+fi
+
+if test "$target_videoplatform" = "target_mali" ; then
+  AC_SUBST(ARCH_DEFINES, "-DTARGET_POSIX -DTARGET_LINUX -D_LINUX -DTARGET_STB -DTARGET_STB_EXTEND -DTARGET_MALI")
+fi
+if test "$target_videoplatform" = "target_aml" ; then
+  AC_SUBST(ARCH_DEFINES, "-DTARGET_POSIX -DTARGET_LINUX -D_LINUX -DTARGET_STB -DTARGET_AML")
+fi
 ])

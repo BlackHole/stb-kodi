@@ -116,7 +116,7 @@ then
 fi
 
 [ -f ${ARCHIVE} ] ||
-  curl -Ls --create-dirs -f -o ${ARCHIVE} ${BASE_URL}/archive/${VERSION}.tar.gz ||
+  curl -k -Ls --create-dirs -f -o ${ARCHIVE} ${BASE_URL}/archive/${VERSION}.tar.gz ||
   { echo "error fetching ${BASE_URL}/archive/${VERSION}.tar.gz" ; exit 3; }
 [ $downloadonly ] && exit 0
 
@@ -134,6 +134,20 @@ tar --strip-components=1 -xf $MYDIR/${ARCHIVE}
 
 CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS" \
 ./configure --prefix=$FFMPEG_PREFIX \
+	--bindir="$FFMPEG_PREFIX/bin" \
+	--libdir="$FFMPEG_PREFIX/lib" \
+	--incdir="$FFMPEG_PREFIX/include" \
+	--pkgconfigdir="$FFMPEG_PREFIX/lib/pkgconfig" \
+	--target-os=linux \
+	--enable-cross-compile \
+	--nm="$NM" \
+	--ar="$AR" \
+	--as="$AS" \
+	--strip="$STRIP" \
+	--cc="$CC" \
+	--cxx="$CXX" \
+	--ld="$CCLD" \
+	--ranlib="$RANLIB" \
 	--extra-version="kodi-${VERSION}" \
 	--disable-devices \
 	--disable-ffplay \

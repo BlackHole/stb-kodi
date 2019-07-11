@@ -188,6 +188,10 @@ if(CORE_SYSTEM_NAME STREQUAL android OR AML_FOUND)
   list(APPEND HEADERS AMLUtils.h)
 endif()
 
+if(DREAMBOX_FOUND)
+  list(APPEND SOURCES DreamboxUtils.cpp)
+endif
+
 if(AML_FOUND)
   list(APPEND HEADERS ScreenshotAML.cpp)
   list(APPEND HEADERS ScreenshotAML.h)

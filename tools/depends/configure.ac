@@ -422,6 +422,94 @@ case $use_platform in
      platform_cxxflags="-fPIC -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=neon-vfpv4 -mvectorize-with-neon-quad"
      platform_ldflags="-lpthread"
      ;;
+  v3d-mipsel)
+    use_cpu=$host_cpu
+    use_toolchain="${use_toolchain:-/usr}"
+    platform_cflags="-Os -fPIC -DPIC"
+    platform_ldflags="-Wl,-rpath-link=$prefix/$deps_dir/lib"
+    platform_cxxflags="$platform_cflags"
+    platform_os="linux"
+  ;;
+  xcore-mipsel)
+    use_cpu=$host_cpu
+    use_toolchain="${use_toolchain:-/usr}"
+    platform_cflags="-Os -fPIC -DPIC"
+    platform_ldflags="-Wl,-rpath-link=$prefix/$deps_dir/lib"
+    platform_cxxflags="$platform_cflags"
+    platform_os="linux"
+  ;;
+  v3d-cortexa15)
+     target_platform=v3d
+     use_neon=yes
+     use_cpu=cortex-a15
+     platform_cflags="-fPIC -mcpu=cortex-a15 -mfloat-abi=hard -mfpu=neon-vfpv4"
+     platform_cxxflags="-fPIC -mcpu=cortex-a15 -mfloat-abi=hard -mfpu=neon-vfpv4"
+     platform_ldflags="-lpthread"
+     ;;
+  dags-cortexa15)
+    target_platform=v3d
+    use_neon=yes
+    use_cpu=cortex-a15
+    platform_cflags="-fPIC -mcpu=cortex-a15 -mfloat-abi=hard -mfpu=neon-vfpv4"
+    platform_cxxflags="-fPIC -mcpu=cortex-a15 -mfloat-abi=hard -mfpu=neon-vfpv4"
+    platform_ldflags="-lpthread"
+  ;;
+  dreambox-cortexa15)
+     target_platform=v3d
+     use_neon=yes
+     use_cpu=cortex-a15
+     platform_cflags="-fPIC -mcpu=cortex-a15 -mfloat-abi=hard -mfpu=neon-vfpv4"
+     platform_cxxflags="-fPIC -mcpu=cortex-a15 -mfloat-abi=hard -mfpu=neon-vfpv4"
+     platform_ldflags="-lpthread"
+     ;;
+  dreambox-mipsel)
+    use_cpu=$host_cpu
+    use_toolchain="${use_toolchain:-/usr}"
+    platform_cflags="-Os -fPIC -DPIC"
+    platform_ldflags="-Wl,-rpath-link=$prefix/$deps_dir/lib"
+    platform_cxxflags="$platform_cflags"
+    platform_os="linux"
+  ;;
+  vuplus-cortexa15)
+     target_platform=v3d
+     use_neon=yes
+     use_cpu=cortex-a15
+     platform_cflags="-fPIC -mcpu=cortex-a15 -mfloat-abi=hard -mfpu=neon-vfpv4"
+     platform_cxxflags="-fPIC -mcpu=cortex-a15 -mfloat-abi=hard -mfpu=neon-vfpv4"
+     platform_ldflags="-lpthread"
+     ;;
+  vuplus-mipsel)
+    use_cpu=$host_cpu
+    use_toolchain="${use_toolchain:-/usr}"
+    platform_cflags="-Os -fPIC -DPIC"
+    platform_ldflags="-Wl,-rpath-link=$prefix/$deps_dir/lib"
+    platform_cxxflags="$platform_cflags"
+    platform_os="linux"
+  ;;
+  nextv-cortexa15)
+    target_platform=v3d
+    use_neon=yes
+    use_cpu=cortex-a15
+    platform_cflags="-fPIC -mcpu=cortex-a15 -mfloat-abi=hard -mfpu=neon-vfpv4"
+    platform_cxxflags="-fPIC -mcpu=cortex-a15 -mfloat-abi=hard -mfpu=neon-vfpv4"
+    platform_ldflags="-lpthread"
+  ;;
+  GB-cortexa15)
+     target_platform=v3d
+     use_neon=yes
+     use_cpu=cortex-a15
+     platform_cflags="-fPIC -mcpu=cortex-a15 -mfloat-abi=hard -mfpu=neon-vfpv4"
+     platform_cxxflags="-fPIC -mcpu=cortex-a15 -mfloat-abi=hard -mfpu=neon-vfpv4"
+     platform_ldflags="-lpthread"
+     ;;
+  mali-cortexa15)
+     target_platform=mali
+     use_neon=yes
+     use_cpu=cortex-a15
+     platform_cflags="-fPIC -mcpu=cortex-a15 -mfloat-abi=hard -mfpu=neon-vfpv4"
+     platform_cxxflags="-fPIC -mcpu=cortex-a15 -mfloat-abi=hard -mfpu=neon-vfpv4"
+     platform_ldflags="-lpthread"
+     ;;
   raspberry-pi3)
      target_platform=raspberry-pi
      use_cpu=cortex-a53

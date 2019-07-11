@@ -1048,6 +1048,12 @@ bool CAddonMgr::PlatformSupportsAddon(const cp_plugin_info_t *plugin)
 #else
     #warning no architecture dependant platform tag
 #endif
+#elif defined(TARGET_MALI)
+    "mali",
+    "linux",
+#elif defined(TARGET_V3D)
+    "v3d",
+    "linux",
 #elif defined(TARGET_FREEBSD)
     "freebsd",
     "linux",
@@ -1156,6 +1162,12 @@ std::string CAddonMgr::GetPlatformLibraryName(cp_cfg_element_t *base) const
 #elif defined(TARGET_LINUX) || defined(TARGET_FREEBSD)
 #if defined(TARGET_FREEBSD)
   libraryName = GetExtValue(base, "@library_freebsd");
+  if (libraryName.empty())
+#elif defined(TARGET_V3D)
+  libraryName = GetExtValue(base, "@library_v3d");
+  if (libraryName.empty())
+#elif defined(TARGET_MALI)
+  libraryName = GetExtValue(base, "@library_mali");
   if (libraryName.empty())
 #endif
   libraryName = GetExtValue(base, "@library_linux");
