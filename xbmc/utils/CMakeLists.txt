@@ -190,7 +190,7 @@ endif()
 
 if(DREAMBOX_FOUND)
   list(APPEND SOURCES DreamboxUtils.cpp)
-endif
+endif()
 
 if(AML_FOUND)
   list(APPEND HEADERS ScreenshotAML.cpp)
