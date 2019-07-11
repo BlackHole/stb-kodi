@@ -1,0 +1,189 @@
+--- WinSystemAmlogic.cpp	2019-07-11 14:43:04.322685514 +0000
++++ WinSystemRpi.cpp	2019-07-11 14:43:19.086701575 +0000
+@@ -11,49 +11,28 @@
+ #include <string.h>
+ #include <float.h>
+ 
++#include "platform/linux/DllBCM.h"
++#include "platform/linux/RBP.h"
+ #include "ServiceBroker.h"
+-#include "cores/RetroPlayer/process/DUMMY/RPProcessInfoDUMMY.h"
+-#include "cores/RetroPlayer/rendering/VideoRenderers/RPRendererOpenGLES.h"
+-#include "cores/VideoPlayer/DVDCodecs/Video/DVDVideoCodecDUMMY.h"
+-#include "cores/VideoPlayer/VideoRenderers/LinuxRendererGLES.h"
+-#include "cores/VideoPlayer/VideoRenderers/HwDecRender/RendererAML.h"
+-// AESink Factory
+-#include "cores/AudioEngine/AESinkFactory.h"
+-#include "cores/AudioEngine/Sinks/AESinkALSA.h"
+ #include "windowing/GraphicContext.h"
+ #include "windowing/Resolution.h"
+-#include "platform/linux/powermanagement/LinuxPowerSyscall.h"
+ #include "settings/DisplaySettings.h"
+ #include "settings/Settings.h"
+ #include "settings/SettingsComponent.h"
+ #include "guilib/DispResource.h"
+-#include "utils/AMLUtils.h"
+ #include "utils/log.h"
+-#include "utils/SysfsUtils.h"
+-#include "threads/SingleLock.h"
+-
+-#include <linux/fb.h>
++#include "cores/AudioEngine/AESinkFactory.h"
++#include "cores/AudioEngine/Sinks/AESinkPi.h"
++#include "platform/linux/powermanagement/LinuxPowerSyscall.h"
+ 
+ #include <EGL/egl.h>
+-
+-using namespace KODI;
++#include <EGL/eglplatform.h>
+ 
+ CWinSystemDUMMY::CWinSystemDUMMY() :
+   m_libinput(new CLibInputHandler)
+ {
+-  const char *env_framebuffer = getenv("FRAMEBUFFER");
+-
+-  // default to framebuffer 0
+-  m_framebuffer_name = "fb0";
+-  if (env_framebuffer)
+-  {
+-    std::string framebuffer(env_framebuffer);
+-    std::string::size_type start = framebuffer.find("fb");
+-    m_framebuffer_name = framebuffer.substr(start);
+-  }
+-
+   m_nativeDisplay = EGL_NO_DISPLAY;
+-  m_nativeWindow = static_cast<EGLNativeWindowType>(NULL);
++  m_nativeWindow = EGL_NO_SURFACE;
+ 
+   m_displayWidth = 0;
+   m_displayHeight = 0;
+@@ -61,12 +40,24 @@
+   m_stereo_mode = RENDER_STEREO_MODE_OFF;
+   m_delayDispReset = false;
+ 
+-  aml_permissions();
+-  aml_disable_freeScale();
++  m_DUMMY = new CDUMMYUtils();
+ 
+-  // Register sink
+   AE::CAESinkFactory::ClearSinks();
+-  CAESinkALSA::Register();
++
++  CAESinkPi::Register();
++  std::string envSink;
++  if (getenv("KODI_AE_SINK"))
++    envSink = getenv("KODI_AE_SINK");
++
++  if (StringUtils::EqualsNoCase(envSink, "PULSE"))
++  {
++    OPTIONALS::PulseAudioRegister();
++  }
++  else
++  {
++    OPTIONALS::ALSARegister();
++  }
++
+   CLinuxPowerSyscall::Register();
+   m_lirc.reset(OPTIONALS::LircRegister());
+   m_libinput->Start();
+@@ -76,22 +67,17 @@
+ {
+   if(m_nativeWindow)
+   {
+-    m_nativeWindow = static_cast<EGLNativeWindowType>(NULL);
++    m_nativeWindow = nullptr;
+   }
++
++  delete m_DUMMY;
++  m_DUMMY = nullptr;
+ }
+ 
+ bool CWinSystemDUMMY::InitWindowSystem()
+ {
+   m_nativeDisplay = EGL_DEFAULT_DISPLAY;
+ 
+-  CDVDVideoCodecDUMMY::Register();
+-  CLinuxRendererGLES::Register();
+-  RETRO::CRPProcessInfoDUMMY::Register();
+-  RETRO::CRPProcessInfoDUMMY::RegisterRendererFactory(new RETRO::CRendererFactoryOpenGLES);
+-  CRendererAML::Register();
+-
+-  aml_set_framebuffer_resolution(1920, 1080, m_framebuffer_name);
+-
+   return CWinSystemBase::InitWindowSystem();
+ }
+ 
+@@ -114,7 +100,7 @@
+   m_displayHeight = res.iScreenHeight;
+   m_fRefreshRate  = res.fRefreshRate;
+ 
+-  if ((m_bWindowCreated && aml_get_native_resolution(&current_resolution)) &&
++  if ((m_bWindowCreated && m_DUMMY->GetNativeResolution(&current_resolution)) &&
+     current_resolution.iWidth == res.iWidth && current_resolution.iHeight == res.iHeight &&
+     current_resolution.iScreenWidth == res.iScreenWidth && current_resolution.iScreenHeight == res.iScreenHeight &&
+     m_bFullScreen == fullScreen && current_resolution.fRefreshRate == res.fRefreshRate &&
+@@ -143,14 +129,9 @@
+   m_stereo_mode = stereo_mode;
+   m_bFullScreen = fullScreen;
+ 
+-#ifdef _FBDEV_WINDOW_H_
+-  fbdev_window *nativeWindow = new fbdev_window;
+-  nativeWindow->width = res.iWidth;
+-  nativeWindow->height = res.iHeight;
+-  m_nativeWindow = static_cast<EGLNativeWindowType>(nativeWindow);
+-#endif
++  m_nativeWindow = static_cast<EGLNativeWindowType>(new EGL_DISPMANX_WINDOW_T);
+ 
+-  aml_set_native_resolution(res, m_framebuffer_name, stereo_mode);
++  m_DUMMY->SetNativeResolution(res, m_nativeWindow);
+ 
+   if (!m_delayDispReset)
+   {
+@@ -167,7 +148,8 @@
+ 
+ bool CWinSystemDUMMY::DestroyWindow()
+ {
+-  m_nativeWindow = static_cast<EGLNativeWindowType>(NULL);
++  m_DUMMY->DestroyDispmanxWindow();
++  m_nativeWindow = nullptr;
+ 
+   return true;
+ }
+@@ -179,7 +161,7 @@
+   RESOLUTION_INFO resDesktop, curDisplay;
+   std::vector<RESOLUTION_INFO> resolutions;
+ 
+-  if (!aml_probe_resolutions(resolutions) || resolutions.empty())
++  if (!m_DUMMY->ProbeResolutions(resolutions) || resolutions.empty())
+   {
+     CLog::Log(LOGWARNING, "%s: ProbeResolutions failed.",__FUNCTION__);
+   }
+@@ -187,7 +169,7 @@
+   /* ProbeResolutions includes already all resolutions.
+    * Only get desktop resolution so we can replace xbmc's desktop res
+    */
+-  if (aml_get_native_resolution(&curDisplay))
++  if (m_DUMMY->GetNativeResolution(&curDisplay))
+   {
+     resDesktop = curDisplay;
+   }
+@@ -247,13 +229,16 @@
+   return false;
+ }
+ 
+-bool CWinSystemDUMMY::Show(bool show)
++bool CWinSystemDUMMY::Show(bool raise)
+ {
+-  std::string blank_framebuffer = "/sys/class/graphics/" + m_framebuffer_name + "/blank";
+-  SysfsUtils::SetInt(blank_framebuffer.c_str(), show ? 0 : 1);
+   return true;
+ }
+ 
++void CWinSystemDUMMY::SetVisible(bool visible)
++{
++  m_DUMMY->SetVisible(visible);
++}
++
+ void CWinSystemDUMMY::Register(IDispResource *resource)
+ {
+   CSingleLock lock(m_resourceSection);
