@@ -6,7 +6,6 @@
  *  See LICENSES/README.md for more information.
  */
 
-#include "VideoSyncAML.h"
 #include "WinSystemVuplusGLESContext.h"
 #include "utils/log.h"
 #include "threads/SingleLock.h"
@@ -148,7 +147,6 @@ EGLConfig  CWinSystemVuplusGLESContext::GetEGLConfig() const
 
 std::unique_ptr<CVideoSync> CWinSystemVuplusGLESContext::GetVideoSync(void *clock)
 {
-  std::unique_ptr<CVideoSync> pVSync(new CVideoSyncAML(clock));
-  return pVSync;
+  return nullptr;
 }
 
