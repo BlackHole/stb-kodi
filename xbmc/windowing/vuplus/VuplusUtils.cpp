@@ -6,6 +6,12 @@
  *  See LICENSES/README.md for more information.
  */
 
+#include "VuplusUtils.h"
+
+#include "utils/log.h"
+#include "windowing/GraphicContext.h"
+#include "windowing/Resolution.h"
+
 CVuplusUtils::CVuplusUtils()
 {
 }
@@ -17,13 +23,12 @@ CVuplusUtils::~CVuplusUtils()
 bool CVuplusUtils::GetNativeResolution(RESOLUTION_INFO *res) const
 {
   *res = m_desktopRes;
-
   return true;
 }
 
 bool CVuplusUtils::SetNativeResolution(const RESOLUTION_INFO res, EGLSurface m_nativeWindow)
 {
-  *res = m_desktopRes;
+  m_desktopRes = res;
   return true;
 }
 
@@ -31,7 +36,6 @@ bool CVuplusUtils::ProbeResolutions(std::vector<RESOLUTION_INFO> &resolutions)
 {
   resolutions.clear();
 
-  m_desktopResAll[0].iScreen      = 0;
   m_desktopResAll[0].bFullScreen  = true;
   m_desktopResAll[0].iWidth       = 1280;
   m_desktopResAll[0].iHeight      = 720;
@@ -48,7 +52,6 @@ bool CVuplusUtils::ProbeResolutions(std::vector<RESOLUTION_INFO> &resolutions)
 
   resolutions.push_back(m_desktopResAll[0]);
 
-  m_desktopResAll[1].iScreen      = 0;
   m_desktopResAll[1].bFullScreen  = true;
   m_desktopResAll[1].iWidth       = 1280;
   m_desktopResAll[1].iHeight      = 720;
@@ -67,7 +70,6 @@ bool CVuplusUtils::ProbeResolutions(std::vector<RESOLUTION_INFO> &resolutions)
 
   resolutions.push_back(m_desktopResAll[1]);
 
-  m_desktopResAll[2].iScreen      = 0;
   m_desktopResAll[2].bFullScreen  = true;
   m_desktopResAll[2].iWidth       = 1280;
   m_desktopResAll[2].iHeight      = 720;

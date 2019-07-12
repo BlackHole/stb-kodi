@@ -8,7 +8,7 @@
 
 #include "Application.h"
 #include "VideoSyncPi.h"
-#include "WinSystemRpiGLESContext.h"
+#include "WinSystemVuplusGLESContext.h"
 #include "guilib/GUIComponent.h"
 #include "guilib/GUIWindowManager.h"
 #include "ServiceBroker.h"
@@ -26,13 +26,13 @@ using namespace KODI;
 
 std::unique_ptr<CWinSystemBase> CWinSystemBase::CreateWinSystem()
 {
-  std::unique_ptr<CWinSystemBase> winSystem(new CWinSystemRpiGLESContext());
+  std::unique_ptr<CWinSystemBase> winSystem(new CWinSystemVuplusGLESContext());
   return winSystem;
 }
 
-bool CWinSystemRpiGLESContext::InitWindowSystem()
+bool CWinSystemVuplusGLESContext::InitWindowSystem()
 {
-  if (!CWinSystemRpi::InitWindowSystem())
+  if (!CWinSystemVuplus::InitWindowSystem())
   {
     return false;
   }
@@ -73,18 +73,18 @@ bool CWinSystemRpiGLESContext::InitWindowSystem()
   return true;
 }
 
-bool CWinSystemRpiGLESContext::CreateNewWindow(const std::string& name,
+bool CWinSystemVuplusGLESContext::CreateNewWindow(const std::string& name,
                                                bool fullScreen,
                                                RESOLUTION_INFO& res)
 {
   m_pGLContext.DestroySurface();
 
-  if (!CWinSystemRpi::DestroyWindow())
+  if (!CWinSystemVuplus::DestroyWindow())
   {
     return false;
   }
 
-  if (!CWinSystemRpi::CreateNewWindow(name, fullScreen, res))
+  if (!CWinSystemVuplus::CreateNewWindow(name, fullScreen, res))
   {
     return false;
   }
@@ -110,20 +110,20 @@ bool CWinSystemRpiGLESContext::CreateNewWindow(const std::string& name,
   return true;
 }
 
-bool CWinSystemRpiGLESContext::ResizeWindow(int newWidth, int newHeight, int newLeft, int newTop)
+bool CWinSystemVuplusGLESContext::ResizeWindow(int newWidth, int newHeight, int newLeft, int newTop)
 {
   CRenderSystemGLES::ResetRenderSystem(newWidth, newHeight);
   return true;
 }
 
-bool CWinSystemRpiGLESContext::SetFullScreen(bool fullScreen, RESOLUTION_INFO& res, bool blankOtherDisplays)
+bool CWinSystemVuplusGLESContext::SetFullScreen(bool fullScreen, RESOLUTION_INFO& res, bool blankOtherDisplays)
 {
   CreateNewWindow("", fullScreen, res);
   CRenderSystemGLES::ResetRenderSystem(res.iWidth, res.iHeight);
   return true;
 }
 
-void CWinSystemRpiGLESContext::SetVSyncImpl(bool enable)
+void CWinSystemVuplusGLESContext::SetVSyncImpl(bool enable)
 {
   if (!m_pGLContext.SetVSync(enable))
   {
@@ -131,11 +131,11 @@ void CWinSystemRpiGLESContext::SetVSyncImpl(bool enable)
   }
 }
 
-void CWinSystemRpiGLESContext::PresentRenderImpl(bool rendered)
+void CWinSystemVuplusGLESContext::PresentRenderImpl(bool rendered)
 {
   CGUIComponent *gui = CServiceBroker::GetGUI();
   if (gui)
-    CWinSystemRpi::SetVisible(gui->GetWindowManager().HasVisibleControls() || g_application.GetAppPlayer().IsRenderingGuiLayer());
+    CWinSystemVuplus::SetVisible(gui->GetWindowManager().HasVisibleControls() || g_application.GetAppPlayer().IsRenderingGuiLayer());
 
   if (m_delayDispReset && m_dispResetTimer.IsTimePast())
   {
@@ -155,27 +155,27 @@ void CWinSystemRpiGLESContext::PresentRenderImpl(bool rendered)
   }
 }
 
-EGLDisplay CWinSystemRpiGLESContext::GetEGLDisplay() const
+EGLDisplay CWinSystemVuplusGLESContext::GetEGLDisplay() const
 {
   return m_pGLContext.GetEGLDisplay();
 }
 
-EGLSurface CWinSystemRpiGLESContext::GetEGLSurface() const
+EGLSurface CWinSystemVuplusGLESContext::GetEGLSurface() const
 {
   return m_pGLContext.GetEGLSurface();
 }
 
-EGLContext CWinSystemRpiGLESContext::GetEGLContext() const
+EGLContext CWinSystemVuplusGLESContext::GetEGLContext() const
 {
   return m_pGLContext.GetEGLContext();
 }
 
-EGLConfig  CWinSystemRpiGLESContext::GetEGLConfig() const
+EGLConfig  CWinSystemVuplusGLESContext::GetEGLConfig() const
 {
   return m_pGLContext.GetEGLConfig();
 }
 
-std::unique_ptr<CVideoSync> CWinSystemRpiGLESContext::GetVideoSync(void *clock)
+std::unique_ptr<CVideoSync> CWinSystemVuplusGLESContext::GetVideoSync(void *clock)
 {
   std::unique_ptr<CVideoSync> pVSync(new CVideoSyncPi(clock));
   return pVSync;

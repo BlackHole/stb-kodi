@@ -12,9 +12,7 @@
 #include <float.h>
 
 #include "ServiceBroker.h"
-#include "cores/RetroPlayer/process/Vuplus/RPProcessInfoVuplus.h"
 #include "cores/RetroPlayer/rendering/VideoRenderers/RPRendererOpenGLES.h"
-#include "cores/VideoPlayer/DVDCodecs/Video/DVDVideoCodecVuplus.h"
 #include "cores/VideoPlayer/VideoRenderers/LinuxRendererGLES.h"
 #include "cores/VideoPlayer/VideoRenderers/HwDecRender/RendererAML.h"
 // AESink Factory
@@ -27,23 +25,23 @@
 #include "settings/Settings.h"
 #include "settings/SettingsComponent.h"
 #include "guilib/DispResource.h"
-#include "utils/AMLUtils.h"
 #include "utils/log.h"
 #include "utils/SysfsUtils.h"
 #include "threads/SingleLock.h"
 
-#if defined(TARGET_VUPLUS_ARM)
+#if defined(HAS_VUPLUS_ARM)
 #include "KodiGLESPL.h"
-#else
+#elif defined(HAS_VUPLUS_MIPSEL)
 #include "gles_init.h"
 #endif
 
 #include <EGL/egl.h>
+#include <EGL/eglplatform.h>
 
 using namespace KODI;
 
-CWinSystemVuplus::CWinSystemVuplus() :
-  m_libinput(new CLibInputHandler)
+CWinSystemVuplus::CWinSystemVuplus() //:
+//  m_libinput(new CLibInputHandler)
 {
 
   m_nativeDisplay = EGL_NO_DISPLAY;
@@ -61,8 +59,8 @@ CWinSystemVuplus::CWinSystemVuplus() :
   AE::CAESinkFactory::ClearSinks();
   CAESinkALSA::Register();
   CLinuxPowerSyscall::Register();
-  m_lirc.reset(OPTIONALS::LircRegister());
-  m_libinput->Start();
+//  m_lirc.reset(OPTIONALS::LircRegister());
+//  m_libinput->Start();
 }
 
 CWinSystemVuplus::~CWinSystemVuplus()
@@ -72,7 +70,7 @@ CWinSystemVuplus::~CWinSystemVuplus()
     GLES_Native_DestroyNativeWindow();
     m_nativeWindow = static_cast<EGLNativeWindowType>(NULL);
   }
-  delete m_rpi;
+  delete m_vuplus;
   m_vuplus = nullptr;
 }
 
@@ -163,7 +161,7 @@ void CWinSystemVuplus::UpdateResolutions()
   RESOLUTION_INFO resDesktop, curDisplay;
   std::vector<RESOLUTION_INFO> resolutions;
 
-  if (!m_Vuplus->ProbeResolutions(resolutions) || resolutions.empty())
+  if (!m_vuplus->ProbeResolutions(resolutions) || resolutions.empty())
   {
     CLog::Log(LOGWARNING, "%s: ProbeResolutions failed.",__FUNCTION__);
   }

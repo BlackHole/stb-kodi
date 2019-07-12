@@ -7,19 +7,19 @@
  */
 
 #include "VideoSyncAML.h"
-#include "WinSystemAmlogicGLESContext.h"
+#include "WinSystemVuplusGLESContext.h"
 #include "utils/log.h"
 #include "threads/SingleLock.h"
 
 std::unique_ptr<CWinSystemBase> CWinSystemBase::CreateWinSystem()
 {
-  std::unique_ptr<CWinSystemBase> winSystem(new CWinSystemAmlogicGLESContext());
+  std::unique_ptr<CWinSystemBase> winSystem(new CWinSystemVuplusGLESContext());
   return winSystem;
 }
 
-bool CWinSystemAmlogicGLESContext::InitWindowSystem()
+bool CWinSystemVuplusGLESContext::InitWindowSystem()
 {
-  if (!CWinSystemAmlogic::InitWindowSystem())
+  if (!CWinSystemVuplus::InitWindowSystem())
   {
     return false;
   }
@@ -50,18 +50,18 @@ bool CWinSystemAmlogicGLESContext::InitWindowSystem()
   return true;
 }
 
-bool CWinSystemAmlogicGLESContext::CreateNewWindow(const std::string& name,
+bool CWinSystemVuplusGLESContext::CreateNewWindow(const std::string& name,
                                                bool fullScreen,
                                                RESOLUTION_INFO& res)
 {
   m_pGLContext.DestroySurface();
 
-  if (!CWinSystemAmlogic::DestroyWindow())
+  if (!CWinSystemVuplus::DestroyWindow())
   {
     return false;
   }
 
-  if (!CWinSystemAmlogic::CreateNewWindow(name, fullScreen, res))
+  if (!CWinSystemVuplus::CreateNewWindow(name, fullScreen, res))
   {
     return false;
   }
@@ -87,20 +87,20 @@ bool CWinSystemAmlogicGLESContext::CreateNewWindow(const std::string& name,
   return true;
 }
 
-bool CWinSystemAmlogicGLESContext::ResizeWindow(int newWidth, int newHeight, int newLeft, int newTop)
+bool CWinSystemVuplusGLESContext::ResizeWindow(int newWidth, int newHeight, int newLeft, int newTop)
 {
   CRenderSystemGLES::ResetRenderSystem(newWidth, newHeight);
   return true;
 }
 
-bool CWinSystemAmlogicGLESContext::SetFullScreen(bool fullScreen, RESOLUTION_INFO& res, bool blankOtherDisplays)
+bool CWinSystemVuplusGLESContext::SetFullScreen(bool fullScreen, RESOLUTION_INFO& res, bool blankOtherDisplays)
 {
   CreateNewWindow("", fullScreen, res);
   CRenderSystemGLES::ResetRenderSystem(res.iWidth, res.iHeight);
   return true;
 }
 
-void CWinSystemAmlogicGLESContext::SetVSyncImpl(bool enable)
+void CWinSystemVuplusGLESContext::SetVSyncImpl(bool enable)
 {
   if (!m_pGLContext.SetVSync(enable))
   {
@@ -108,7 +108,7 @@ void CWinSystemAmlogicGLESContext::SetVSyncImpl(bool enable)
   }
 }
 
-void CWinSystemAmlogicGLESContext::PresentRenderImpl(bool rendered)
+void CWinSystemVuplusGLESContext::PresentRenderImpl(bool rendered)
 {
   if (m_delayDispReset && m_dispResetTimer.IsTimePast())
   {
@@ -126,27 +126,27 @@ void CWinSystemAmlogicGLESContext::PresentRenderImpl(bool rendered)
   m_pGLContext.TrySwapBuffers();
 }
 
-EGLDisplay CWinSystemAmlogicGLESContext::GetEGLDisplay() const
+EGLDisplay CWinSystemVuplusGLESContext::GetEGLDisplay() const
 {
   return m_pGLContext.GetEGLDisplay();
 }
 
-EGLSurface CWinSystemAmlogicGLESContext::GetEGLSurface() const
+EGLSurface CWinSystemVuplusGLESContext::GetEGLSurface() const
 {
   return m_pGLContext.GetEGLSurface();
 }
 
-EGLContext CWinSystemAmlogicGLESContext::GetEGLContext() const
+EGLContext CWinSystemVuplusGLESContext::GetEGLContext() const
 {
   return m_pGLContext.GetEGLContext();
 }
 
-EGLConfig  CWinSystemAmlogicGLESContext::GetEGLConfig() const
+EGLConfig  CWinSystemVuplusGLESContext::GetEGLConfig() const
 {
   return m_pGLContext.GetEGLConfig();
 }
 
-std::unique_ptr<CVideoSync> CWinSystemAmlogicGLESContext::GetVideoSync(void *clock)
+std::unique_ptr<CVideoSync> CWinSystemVuplusGLESContext::GetVideoSync(void *clock)
 {
   std::unique_ptr<CVideoSync> pVSync(new CVideoSyncAML(clock));
   return pVSync;
