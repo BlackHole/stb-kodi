@@ -47,7 +47,7 @@
 using namespace KODI;
 
 CWinSystemVuplus::CWinSystemVuplus() //:
-//  m_libinput(new CLibInputHandler)
+  m_libinput(new CLibInputHandler)
 {
 
   m_nativeDisplay = 0;
@@ -66,7 +66,7 @@ CWinSystemVuplus::CWinSystemVuplus() //:
 //  CAESinkALSA::Register();
   CLinuxPowerSyscall::Register();
 //  m_lirc.reset(OPTIONALS::LircRegister());
-//  m_libinput->Start();
+  m_libinput->Start();
 }
 
 CWinSystemVuplus::~CWinSystemVuplus()
