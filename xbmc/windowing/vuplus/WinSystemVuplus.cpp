@@ -29,6 +29,12 @@
 #include "utils/SysfsUtils.h"
 #include "threads/SingleLock.h"
 
+#include <stdio.h>
+#include <malloc.h>
+#include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #if defined(HAS_VUPLUS_ARM)
 #include "KodiGLESPL.h"
 #elif defined(HAS_VUPLUS_MIPSEL)
@@ -44,8 +50,8 @@ CWinSystemVuplus::CWinSystemVuplus() //:
 //  m_libinput(new CLibInputHandler)
 {
 
-  m_nativeDisplay = EGL_NO_DISPLAY;
-  m_nativeWindow = EGL_NO_SURFACE;
+  m_nativeDisplay = 0;
+  m_nativeWindow = 0;
 
   m_displayWidth = 0;
   m_displayHeight = 0;
@@ -76,14 +82,23 @@ CWinSystemVuplus::~CWinSystemVuplus()
 
 bool CWinSystemVuplus::InitWindowSystem()
 {
+  CLog::Log(LOGNOTICE, "%s %s %s", __FILE__, __FUNCTION__, "GLES_Native_Init");
   GLES_Native_Init();
+
+  CLog::Log(LOGNOTICE, "%s %s %s", __FILE__, __FUNCTION__, "GLES_Native_CreateNativeDisplay");
   GLES_Native_CreateNativeDisplay(&m_nativeDisplay);
- 
+
+  CLog::Log(LOGNOTICE, "%s %s %s", __FILE__, __FUNCTION__, "GLES_Native_CreateNativeWindow");
+  m_nativeWindow = GLES_Native_CreateNativeWindow();
+  CLog::Log(LOGNOTICE, "%s %s %p", __FILE__, __FUNCTION__, m_nativeWindow);
+
   return CWinSystemBase::InitWindowSystem();
 }
 
 bool CWinSystemVuplus::DestroyWindowSystem()
 {
+  GLES_Native_DestroyNativeDisplay();
+  m_nativeWindow = static_cast<EGLNativeWindowType>(NULL);
   return true;
 }
 
@@ -130,7 +145,6 @@ bool CWinSystemVuplus::CreateNewWindow(const std::string& name,
   m_stereo_mode = stereo_mode;
   m_bFullScreen = fullScreen;
 
-  m_nativeWindow = GLES_Native_CreateNativeWindow();
 
   m_vuplus->SetNativeResolution(res, m_nativeWindow);
 
@@ -149,8 +163,6 @@ bool CWinSystemVuplus::CreateNewWindow(const std::string& name,
 
 bool CWinSystemVuplus::DestroyWindow()
 {
-  GLES_Native_DestroyNativeDisplay();
-  m_nativeWindow = static_cast<EGLNativeWindowType>(NULL);
   return true;
 }
 
