@@ -558,6 +558,18 @@ bool CInputManager::HandleKey(const CKey& key)
           useKeyboard = true;
       }
     }
+#if defined(TARGET_STB)
+    switch(key.GetVKey()) {
+      case 0x0d:
+      case 0x80:
+      case 0x81:
+      case 0x82:
+      case 0x83:
+        if (iWin == WINDOW_DIALOG_KEYBOARD)
+          useKeyboard = false;
+        break;
+    }
+#endif
     if (useKeyboard)
     {
       // use the virtualkeyboard section of the keymap, and send keyboard-specific or navigation
