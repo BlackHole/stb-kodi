@@ -46,7 +46,7 @@
 
 using namespace KODI;
 
-CWinSystemVuplus::CWinSystemVuplus() //:
+CWinSystemVuplus::CWinSystemVuplus() :
   m_libinput(new CLibInputHandler)
 {
 
