@@ -18,7 +18,6 @@ std::unique_ptr<CWinSystemBase> CWinSystemBase::CreateWinSystem()
 
 bool CWinSystemVuplusGLESContext::InitWindowSystem()
 {
-  CLog::Log(LOGNOTICE, "%s %s %s", __FILE__, __FUNCTION__, "InitWindowSystem");
   if (!CWinSystemVuplus::InitWindowSystem())
   {
     return false;
@@ -66,7 +65,6 @@ bool CWinSystemVuplusGLESContext::CreateNewWindow(const std::string& name,
     return false;
   }
 
-  CLog::Log(LOGNOTICE, "%s %s %s %p", __FILE__, __FUNCTION__, "CreateSurface", m_nativeWindow);
   if (!m_pGLContext.CreateSurface(m_nativeWindow))
   {
     return false;

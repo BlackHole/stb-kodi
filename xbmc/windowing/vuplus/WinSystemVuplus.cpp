@@ -82,15 +82,9 @@ CWinSystemVuplus::~CWinSystemVuplus()
 
 bool CWinSystemVuplus::InitWindowSystem()
 {
-  CLog::Log(LOGNOTICE, "%s %s %s", __FILE__, __FUNCTION__, "GLES_Native_Init");
   GLES_Native_Init();
-
-  CLog::Log(LOGNOTICE, "%s %s %s", __FILE__, __FUNCTION__, "GLES_Native_CreateNativeDisplay");
   GLES_Native_CreateNativeDisplay(&m_nativeDisplay);
-
-  CLog::Log(LOGNOTICE, "%s %s %s", __FILE__, __FUNCTION__, "GLES_Native_CreateNativeWindow");
   m_nativeWindow = GLES_Native_CreateNativeWindow();
-  CLog::Log(LOGNOTICE, "%s %s %p", __FILE__, __FUNCTION__, m_nativeWindow);
 
   return CWinSystemBase::InitWindowSystem();
 }
