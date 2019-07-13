@@ -55,4 +55,5 @@ protected:
 
   CCriticalSection m_resourceSection;
   std::vector<IDispResource*> m_resources;
+  std::unique_ptr<CLibInputHandler> m_libinput;
 };
