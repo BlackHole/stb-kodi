@@ -86,6 +86,11 @@ bool CWinSystemVuplus::InitWindowSystem()
   GLES_Native_CreateNativeDisplay(&m_nativeDisplay);
   m_nativeWindow = GLES_Native_CreateNativeWindow();
 
+  //CDVDVideoCodecAmlogic::Register();
+  CLinuxRendererGLES::Register();
+  //RETRO::CRPProcessInfoAmlogic::Register();
+  //RETRO::CRPProcessInfoAmlogic::RegisterRendererFactory(new RETRO::CRendererFactoryOpenGLES);
+
   return CWinSystemBase::InitWindowSystem();
 }
 

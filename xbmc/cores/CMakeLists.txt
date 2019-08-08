@@ -13,4 +13,8 @@ if(CORE_PLATFORM_NAME_LC STREQUAL rbpi)
   add_subdirectory(omxplayer)
 endif()
 
+if(CORE_PLATFORM_NAME_LC STREQUAL vuplus)
+  add_subdirectory(gstplayer)
+endif()
+
 core_add_library(cores)
