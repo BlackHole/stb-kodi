@@ -30,12 +30,32 @@ exec_prefix="@exec_prefix@"
 datarootdir="@datarootdir@"
 LIBDIR="@libdir@"
 APP_BINARY=$LIBDIR/${bin_name}/@APP_BINARY@
-CRASHLOG_DIR=${CRASHLOG_DIR:-$HOME}
-KODI_DATA=${KODI_DATA:-"${HOME}/.${bin_name}"} # mapped to special://home/
+export KODI_TEMP="/tmp/kodi"
+CRASHLOG_DIR=${CRASHLOG_DIR:-$KODI_TEMP}
 WINDOWING=${WINDOWING:-"auto"}
 
 # Workaround for high CPU load with nvidia GFX
 export __GL_YIELD=USLEEP
+
+check_media_hdd() {
+    [ -e /proc/mounts ] || return 0
+
+    exec 9<&0 < /proc/mounts
+    while read DEV MTPT REST; do
+        case $DEV in
+            /dev/sd[a-z][0-9])
+            if [ "$MTPT" == "/media/hdd" ]; then
+                export HOME="$MTPT"
+                break
+            fi
+            ;;
+        esac
+    done
+    exec 0<&9 9<&-
+}
+
+check_media_hdd
+KODI_DATA="${HOME}/.${bin_name}"
 
 # Fix wasting RAM due to fragmentation
 export MALLOC_MMAP_THRESHOLD_=131072
@@ -213,13 +233,13 @@ do
   LOOP=0
   ${KODI_BINARY} $SAVED_ARGS
   RET=$?
-  if [ $(( $RET == 65 )) = "1" ]
-  then # User requested to restart app
-    LOOP=1
-  elif [ $(( ($RET >= 131 && $RET <= 136) || $RET == 139 )) = "1" ]
-  then # Crashed with core dump
-    print_crash_report
-  fi
+#  if [ $(( $RET == 65 )) = "1" ]
+#  then # User requested to restart app
+#    LOOP=1
+#  elif [ $(( ($RET >= 131 && $RET <= 136) || $RET == 139 )) = "1" ]
+#  then # Crashed with core dump
+#    print_crash_report
+#  fi
 done
 
 exit $RET

@@ -279,6 +279,12 @@ CCPUInfo::CCPUInfo(void)
     m_fProcTemperature = fopen("/sys/class/thermal/thermal_zone0/temp", "r");  // On Raspberry PIs
 
   m_fCPUFreq = fopen ("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq", "r");
+  
+  if (m_fCPUFreq == NULL)
+    m_fCPUFreq = fopen ("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq", "r");
+  if (m_fCPUFreq == NULL)  
+    m_fCPUFreq = fopen ("/sys/devices/platform/brcmstb/cpu_khz", "r");
+
   if (!m_fCPUFreq)
   {
     m_cpuInfoForFreq = true;
@@ -420,6 +426,30 @@ CCPUInfo::CCPUInfo(void)
           }
         }
       }
+#ifdef TARGET_STB_EXTEND
+      else if (strncmp(buffer, "system type", strlen("system type"))==0)
+      {
+        char *needle = strchr(buffer, ':');
+        if (needle && strlen(needle)>3)
+        {
+          needle+=2;
+          m_cpuModel = needle;
+          StringUtils::Trim(m_cpuModel);
+          StringUtils::ToUpper(m_cpuModel);
+          m_cpuModel.insert(0, "Broadcom ");
+        }
+      }
+      else if (strncmp(buffer, "cpu model", strlen("cpu model"))==0)
+      {
+        char *needle = strchr(buffer, ':');
+        if (needle && strlen(needle)>3)
+        {
+          needle+=2;
+          m_cores[nCurrId].m_strModel = needle;
+          StringUtils::Trim(m_cores[nCurrId].m_strModel);
+        }
+      }
+#endif
     }
     fclose(fCPUInfo);
     // new socs use the sysfs soc interface to describe the hardware
@@ -628,6 +658,15 @@ bool CCPUInfo::getTemperature(CTemperature& temperature)
 #if defined(TARGET_DARWIN_OSX)
   value = SMCGetTemperature(SMC_KEY_CPU_TEMP);
   scale = 'c';
+#elif defined(TARGET_XCORE)
+  value = 0;
+  scale = 'c';
+  FILE        *p    = fopen("/proc/stb/fp/temp_sensor_avs", "r");
+  if (p)
+  {
+    fscanf(p, "%d", &value);
+    fclose(p);
+  }
 #else
   int         ret   = 0;
   FILE        *p    = NULL;

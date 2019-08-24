@@ -142,8 +142,37 @@ static const std::map<xkb_keysym_t, XBMCKey> xkbMap =
   // XBMCK_REWIND clashes with XBMCK_MEDIA_REWIND
   { XKB_KEY_XF86Phone, XBMCK_PHONE },
   { XKB_KEY_XF86AudioPlay, XBMCK_PLAY },
-  { XKB_KEY_XF86AudioRandomPlay, XBMCK_SHUFFLE }
+  { XKB_KEY_XF86AudioRandomPlay, XBMCK_SHUFFLE },
   // XBMCK_FASTFORWARD clashes with XBMCK_MEDIA_FASTFORWARD
+
+#if defined(TARGET_STB)
+  { KEY_OK            , XBMCK_RETURN      }, // Ok
+  { KEY_EXIT          , XBMCK_ESCAPE      }, // EXIT
+  { KEY_INFO          , XBMCK_i           }, // Info
+  { KEY_SUBTITLE      , XBMCK_l           }, // Subtitle
+  { KEY_TV            , XBMCK_z           }, // TV
+  { KEY_TV2           , XBMCK_z           }, // TV/RADIO
+  { KEY_RADIO         , XBMCK_j           }, // Radio
+  { KEY_AUDIO         , XBMCK_a           }, // Audio
+  { 139               , XBMCK_MENU        }, // Menu
+  { 358               , XBMCK_e           }, // EPG
+  { 388               , XBMCK_y           }, // Teletext
+  { 393               , XBMCK_x           }, // Unknown
+  { KEY_CHANNELUP     , XBMCK_PAGEUP      }, // PageUp
+  { KEY_CHANNELDOWN   , XBMCK_PAGEDOWN    }, // PageDown
+  { KEY_NEXT          , XBMCK_MEDIA_NEXT_TRACK }, // Next
+  { KEY_PREVIOUS      , XBMCK_MEDIA_PREV_TRACK }, // Prev
+  { KEY_VIDEO         , XBMCK_c           }, // Playlist
+  { KEY_LIST          , XBMCK_c           }, // Playlist
+  { 438               , XBMCK_TAB         }, // Context
+  { KEY_BOOKMARKS     , XBMCK_TAB         }, // Portal
+  { 227               , XBMCK_z           }, // Aspectratio
+  { KEY_PROGRAM       , XBMCK_o           }, // Timer
+  { 398               , XBMCK_F1          }, // Red
+  { 399               , XBMCK_F2          }, // Green
+  { 400               , XBMCK_F3          }, // Yellow
+  { 401               , XBMCK_F4          }, // Blue
+#endif
 };
 
 CLibInputKeyboard::CLibInputKeyboard()

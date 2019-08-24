@@ -646,7 +646,7 @@ function(core_find_git_rev stamp)
         string(REPLACE "\"" "" HASH ${HASH})
 
         if(status_code)
-          string(CONCAT HASH ${HASH} "-dirty")
+          string(CONCAT HASH ${HASH} "-stb")
         endif()
 
       # get HEAD commit date

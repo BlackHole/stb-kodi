@@ -574,7 +574,7 @@
           <control type="spinner" format="integer" delayed="true"/>
         </setting>
         <setting id="subtitles.font" type="string" label="14089" help="36185">
-          <level>1</level>
+          <level>3</level>
           <default>arial.ttf</default>
           <constraints>
             <options>fonts</options>
@@ -582,7 +582,7 @@
           <control type="list" format="string" />
         </setting>
         <setting id="subtitles.charset" type="string" parent="subtitles.font" label="735" help="36189">
-          <level>1</level>
+          <level>3</level>
           <default>DEFAULT</default>
           <constraints>
             <options>charsets</options>
@@ -2494,7 +2494,7 @@
         <setting id="audiooutput.processquality" type="integer" label="13505" help="36169">
           <requirement>HAS_AE_QUALITY_LEVELS</requirement>
           <level>2</level>
-          <default>30</default> <!-- AE_QUALITY_MID -->
+          <default>20</default> <!-- AE_QUALITY_MID -->
           <constraints>
             <options>aequalitylevels</options>
           </constraints>
@@ -2512,7 +2512,7 @@
         </setting>
         <setting id="audiooutput.samplerate" type="integer" label="458" help="36523">
           <level>2</level>
-          <default>48000</default>
+          <default>44100</default>
           <dependencies>
             <dependency type="visible">
               <and>
@@ -2524,12 +2524,6 @@
           <constraints>
             <options>
               <option label="34124">44100</option>
-              <option label="34125">48000</option>
-              <option label="34126">88200</option>
-              <option label="34127">96000</option>
-              <option label="34128">192000</option>
-              <option label="34129">352800</option>
-              <option label="34130">384000</option>
             </options>
           </constraints>
           <control type="list" format="integer" />
@@ -3297,7 +3291,7 @@
       <group id="2" label="14270">
         <setting id="locale.country" type="string" label="14271" help="36115">
           <level>0</level>
-          <default>USA (12h)</default>
+          <default>Central Europe</default>
           <constraints>
             <options>regions</options>
           </constraints>

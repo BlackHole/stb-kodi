@@ -27,6 +27,9 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
+
+#define VKEY_ENABLE (0)
+
 #include "system.h"
 #if 1 //defined(HAS_LINUX_EVENTS)
 
@@ -284,6 +287,34 @@ KeyMap keyMap[] = {
   { 378               , XBMCK_RIGHT       }, // Green
   { 381               , XBMCK_UP          }, // Yellow
   { 366               , XBMCK_DOWN        }, // Blue
+#if defined(TARGET_STB)
+  { KEY_OK            , XBMCK_RETURN      }, // Ok
+  { KEY_EXIT          , XBMCK_ESCAPE      }, // EXIT
+  { KEY_INFO          , XBMCK_i           }, // Info
+  { KEY_SUBTITLE      , XBMCK_l           }, // Subtitle
+  { KEY_TV            , XBMCK_z           }, // TV
+  { KEY_TV2           , XBMCK_z           }, // TV/RADIO
+  { KEY_RADIO         , XBMCK_j           }, // Radio
+  { KEY_AUDIO         , XBMCK_a           }, // Audio
+  { 139               , XBMCK_MENU        }, // Menu
+  { 358               , XBMCK_e           }, // EPG
+  { 388               , XBMCK_y           }, // Teletext
+  { 393               , XBMCK_x           }, // Unknown
+  { KEY_CHANNELUP     , XBMCK_PAGEUP      }, // PageUp
+  { KEY_CHANNELDOWN   , XBMCK_PAGEDOWN    }, // PageDown
+  { KEY_NEXT          , XBMCK_MEDIA_NEXT_TRACK }, // Next
+  { KEY_PREVIOUS      , XBMCK_MEDIA_PREV_TRACK }, // Prev
+  { KEY_VIDEO         , XBMCK_c           }, // Playlist
+  { KEY_LIST          , XBMCK_c           }, // Playlist
+  { 438               , XBMCK_TAB         }, // Context
+  { KEY_BOOKMARKS     , XBMCK_TAB         }, // Portal
+  { 227               , XBMCK_z           }, // Aspectratio
+  { KEY_PROGRAM       , XBMCK_o           }, // Timer
+  { 398               , XBMCK_F1          }, // Red
+  { 399               , XBMCK_F2          }, // Green
+  { 400               , XBMCK_F3          }, // Yellow
+  { 401               , XBMCK_F4          }, // Blue
+#endif
 };
 
 typedef enum
@@ -561,9 +592,17 @@ bool CLinuxInputDevice::KeyEvent(const struct input_event& levt, XBMC_Event& dev
 
     KeymapEntry entry;
     entry.code = code;
+
+    int keyMapValue;
+#if defined(TARGET_STB)
+    if (devt.key.keysym.mod & (XBMCKMOD_SHIFT | XBMCKMOD_CAPS)) keyMapValue = entry.shift;
+    else if (devt.key.keysym.mod & XBMCKMOD_ALT) keyMapValue = entry.alt;
+    else if (devt.key.keysym.mod & XBMCKMOD_META) keyMapValue = entry.altShift;
+    else keyMapValue = entry.base;
+    devt.key.keysym.unicode = devt.key.keysym.sym;
+#else
     if (GetKeymapEntry(entry))
     {
-      int keyMapValue;
       if (devt.key.keysym.mod & (XBMCKMOD_SHIFT | XBMCKMOD_CAPS)) keyMapValue = entry.shift;
       else if (devt.key.keysym.mod & XBMCKMOD_ALT) keyMapValue = entry.alt;
       else if (devt.key.keysym.mod & XBMCKMOD_META) keyMapValue = entry.altShift;
@@ -578,6 +617,7 @@ bool CLinuxInputDevice::KeyEvent(const struct input_event& levt, XBMC_Event& dev
         }
       }
     }
+#endif
   }
 
   return true;
@@ -867,6 +907,12 @@ XBMC_Event CLinuxInputDevice::ReadEvent()
 
         break;
       }
+
+#if defined(TARGET_STB)
+      if (access("/tmp/playing.lock", F_OK) == 0) {
+        break;
+      }
+#endif
 
       //printf("read event readlen = %d device name %s m_fileName %s\n", readlen, m_deviceName, m_fileName.c_str());
 
@@ -1205,6 +1251,7 @@ bool CLinuxInputDevices::CheckDevice(const char *device)
     return false;
   }
 
+#if !defined(TARGET_STB_EXTEND)
   if (ioctl(fd, EVIOCGRAB, 1) && errno != EINVAL)
   {
     close(fd);
@@ -1212,6 +1259,7 @@ bool CLinuxInputDevices::CheckDevice(const char *device)
   }
 
   ioctl(fd, EVIOCGRAB, 0);
+#endif
 
   close(fd);
 
@@ -1304,6 +1352,7 @@ bool CLinuxInputDevice::Open()
     return false;
   }
 
+#if !defined(TARGET_STB_EXTEND)
   /* grab device */
   ret = ioctl(fd, EVIOCGRAB, 1);
   if (ret && errno != EINVAL)
@@ -1312,6 +1361,7 @@ bool CLinuxInputDevice::Open()
     close(fd);
     return false;
   }
+#endif
 
   // Set the socket to non-blocking
   int opts = 0;
@@ -1379,7 +1429,9 @@ bool CLinuxInputDevice::Open()
 
 driver_open_device_error:
 
+#if !defined(TARGET_STB_EXTEND)
   ioctl(fd, EVIOCGRAB, 0);
+#endif
   if (m_vt_fd >= 0)
   {
     close(m_vt_fd);
@@ -1453,8 +1505,10 @@ bool CLinuxInputDevice::GetKeymapEntry(KeymapEntry& entry)
  */
 void CLinuxInputDevice::Close()
 {
+#if !defined(TARGET_STB_EXTEND)
   /* release device */
   ioctl(m_fd, EVIOCGRAB, 0);
+#endif
 
   if (m_vt_fd >= 0)
     close(m_vt_fd);
