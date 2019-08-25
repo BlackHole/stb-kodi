@@ -6,7 +6,7 @@ if(LIRCCLIENT_FOUND)
   list(APPEND HEADERS LIRC.h)
 endif()
 
-if(CORE_PLATFORM_NAME_LC STREQUAL rbpi OR CORE_PLATFORM_NAME_LC STREQUAL gbm OR CORE_PLATFORM_NAME_LC STREQUAL aml OR CORE_PLATFORM_NAME_LC STREQUAL vuplus)
+if(CORE_PLATFORM_NAME_LC STREQUAL rbpi OR CORE_PLATFORM_NAME_LC STREQUAL gbm OR CORE_PLATFORM_NAME_LC STREQUAL aml)
   if(LIBINPUT_FOUND)
     list(APPEND SOURCES LibInputHandler.cpp
                         LibInputKeyboard.cpp
@@ -20,6 +20,11 @@ if(CORE_PLATFORM_NAME_LC STREQUAL rbpi OR CORE_PLATFORM_NAME_LC STREQUAL gbm OR 
                         LibInputSettings.h
                         LibInputTouch.h)
   endif()
+endif()
+
+if(CORE_PLATFORM_NAME_LC STREQUAL vuplus)
+  list(APPEND SOURCES LinuxInputDevices.cpp)
+  list(APPEND HEADERS LinuxInputDevices.h)
 endif()
 
 if(SOURCES)
