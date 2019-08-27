@@ -10,7 +10,6 @@
 
 #include "VuplusUtils.h"
 //#include "windowing/WinSystem.h"
-#include "platform/linux/input/LibInputHandler.h"
 #include "platform/linux/OptionalsReg.h"
 #include "rendering/gles/RenderSystemGLES.h"
 #include "threads/CriticalSection.h"
@@ -55,5 +54,4 @@ protected:
 
   CCriticalSection m_resourceSection;
   std::vector<IDispResource*> m_resources;
-  std::unique_ptr<CLibInputHandler> m_libinput;
 };
