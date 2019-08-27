@@ -112,6 +112,11 @@ typedef unsigned long kernel_ulong_t;
 
 #define MAX_LINUX_INPUT_DEVICES 16
 
+namespace
+{
+constexpr int TOUCH_MAX_POINTERS = CGenericTouchInputHandler::MAX_POINTERS;
+}
+
 typedef struct {
   unsigned short Key;
   XBMCKey xbmcKey;
