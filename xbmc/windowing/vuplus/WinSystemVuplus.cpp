@@ -28,6 +28,7 @@
 #include "utils/log.h"
 #include "utils/SysfsUtils.h"
 #include "threads/SingleLock.h"
+#include "../linux/WinEventsLinux.h"
 
 #include <stdio.h>
 #include <malloc.h>
@@ -59,6 +60,8 @@ CWinSystemVuplus::CWinSystemVuplus()
   m_delayDispReset = false;
 
   m_vuplus = new CVuplusUtils();
+
+  m_winEvents.reset(new CWinEventsLinux());
 
   // Register sink
   AE::CAESinkFactory::ClearSinks();
