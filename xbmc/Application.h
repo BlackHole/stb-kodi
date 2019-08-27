@@ -396,9 +396,6 @@ protected:
 #if defined(TARGET_ANDROID)
   friend class CWinEventsAndroid;
 #endif
-#if defined(TARGET_VUPLUS)
-  friend class CWinEventsLinux;
-#endif
   // screensaver
   bool m_screensaverActive = false;
   std::string m_screensaverIdInUse;
