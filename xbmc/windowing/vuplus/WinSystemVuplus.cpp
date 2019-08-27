@@ -28,7 +28,7 @@
 #include "utils/log.h"
 #include "utils/SysfsUtils.h"
 #include "threads/SingleLock.h"
-#include "../linux/WinEventsLinux.h"
+#include "../WinEventsLinux.h"
 
 #include <stdio.h>
 #include <malloc.h>

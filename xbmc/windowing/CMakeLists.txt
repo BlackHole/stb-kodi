@@ -11,6 +11,11 @@ set(HEADERS GraphicContext.h
             XBMC_events.h
             VideoSync.h)
 
+if(CORE_PLATFORM_NAME_LC STREQUAL vuplus)
+  list(APPEND SOURCES WinEventsLinux.cpp)
+  list(APPEND HEADERS WinEventsLinux.h)
+endif()
+
 if(CORE_PLATFORM_NAME_LC STREQUAL rbpi)
   add_subdirectory(rpi)
 endif()
