@@ -22,7 +22,8 @@
 #include "WinEvents.h"
 #include "XBMC_events.h"
 #include "input/XBMC_keysym.h"
-#include "Application.h"
+//#include "Application.h"
+#include "AppInboundProtocol.h"
 #include "input/mouse/MouseStat.h"
 #include "utils/log.h"
 #include "powermanagement/PowerManager.h"
@@ -64,7 +65,9 @@ bool CWinEventsLinux::MessagePump()
     event = m_devices.ReadEvent();
     if (event.type != XBMC_NOEVENT)
     {
-      ret |= g_application.OnEvent(event);
+      std::shared_ptr<CAppInboundProtocol> appPort = CServiceBroker::GetAppPort();
+      if (appPort)
+        ret |= appPort->OnEvent(event);
     }
     else
     {
@@ -77,5 +80,7 @@ bool CWinEventsLinux::MessagePump()
 
 void CWinEventsLinux::MessagePush(XBMC_Event *ev)
 {
-  g_application.OnEvent(*ev);
+  std::shared_ptr<CAppInboundProtocol> appPort = CServiceBroker::GetAppPort();
+  if (appPort)
+    appPort->OnEvent(*ev);
 }
