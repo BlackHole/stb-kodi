@@ -28,9 +28,10 @@
  *
  */
 #include "system.h"
-#if defined(HAS_LINUX_EVENTS)
+#if 1 //defined(HAS_LINUX_EVENTS)
 
 #include <linux/version.h>
+#include "settings/AdvancedSettings.h"
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,16)
 typedef unsigned long kernel_ulong_t;
@@ -91,14 +92,16 @@ typedef unsigned long kernel_ulong_t;
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "guilib/GraphicContext.h"
+#include "windowing/GraphicContext.h"
 #include "input/XBMC_keysym.h"
 #include "LinuxInputDevices.h"
-#include "input/MouseStat.h"
+#include "input/mouse/MouseStat.h"
 #include "utils/log.h"
 #include "input/touch/generic/GenericTouchActionHandler.h"
 #include "input/touch/generic/GenericTouchInputHandler.h"
 #include "settings/AdvancedSettings.h"
+#include "settings/Settings.h"
+#include "settings/SettingsComponent.h"
 
 #ifndef BITS_PER_LONG
 #define BITS_PER_LONG        (sizeof(long) * 8)
@@ -448,7 +451,7 @@ XBMCMod CLinuxInputDevice::UpdateModifiers(XBMC_Event& devt)
     default: break;
   }
 
-  if (devt.key.type == XBMC_KEYDOWN)
+  if (devt.type == XBMC_KEYDOWN)
   {
     m_keyMods |= modifier;
   }
@@ -457,7 +460,7 @@ XBMCMod CLinuxInputDevice::UpdateModifiers(XBMC_Event& devt)
     m_keyMods &= ~modifier;
   }
 
-  if (devt.key.type == XBMC_KEYDOWN)
+  if (devt.type == XBMC_KEYDOWN)
   {
     modifier = XBMCKMOD_NONE;
     switch (devt.key.keysym.sym)
@@ -498,8 +501,8 @@ bool CLinuxInputDevice::KeyEvent(const struct input_event& levt, XBMC_Event& dev
       return false;
 
     devt.type = levt.value ? XBMC_MOUSEBUTTONDOWN : XBMC_MOUSEBUTTONUP;
-    devt.button.state = levt.value ? XBMC_PRESSED : XBMC_RELEASED;
-    devt.button.type = devt.type;
+//    devt.button.state = levt.value ? XBMC_PRESSED : XBMC_RELEASED;
+    //devt.button.type = devt.type;
     devt.button.x = m_mouseX;
     devt.button.y = m_mouseY;
 
@@ -549,7 +552,7 @@ bool CLinuxInputDevice::KeyEvent(const struct input_event& levt, XBMC_Event& dev
     }
 
     devt.type = levt.value ? XBMC_KEYDOWN : XBMC_KEYUP;
-    devt.key.type = devt.type;
+    //devt.key.type = devt.type;
     // warning, key.keysym.scancode is unsigned char so 0 - 255 only
     devt.key.keysym.scancode = code;
     devt.key.keysym.sym = key;
@@ -592,14 +595,14 @@ bool CLinuxInputDevice::RelEvent(const struct input_event& levt, XBMC_Event& dev
   {
   case REL_X:
     m_mouseX += levt.value;
-    devt.motion.xrel = levt.value;
-    devt.motion.yrel = 0;
+    //devt.motion.xrel = levt.value;
+    //devt.motion.yrel = 0;
     motion = true;
     break;
   case REL_Y:
     m_mouseY += levt.value;
-    devt.motion.xrel = 0;
-    devt.motion.yrel = levt.value;
+    //devt.motion.xrel = 0;
+    //devt.motion.yrel = levt.value;
     motion = true;
     break;
   case REL_WHEEL:
@@ -612,28 +615,28 @@ bool CLinuxInputDevice::RelEvent(const struct input_event& levt, XBMC_Event& dev
   }
 
   // limit the mouse to the screen width
-  m_mouseX = std::min(g_graphicsContext.GetWidth(), m_mouseX);
+  m_mouseX = std::min(CServiceBroker::GetWinSystem()->GetGfxContext().GetWidth(), m_mouseX);
   m_mouseX = std::max(0, m_mouseX);
 
   // limit the mouse to the screen height
-  m_mouseY = std::min(g_graphicsContext.GetHeight(), m_mouseY);
+  m_mouseY = std::min(CServiceBroker::GetWinSystem()->GetGfxContext().GetHeight(), m_mouseY);
   m_mouseY = std::max(0, m_mouseY);
 
 
   if (motion)
   {
     devt.type = XBMC_MOUSEMOTION;
-    devt.motion.type = XBMC_MOUSEMOTION;
+    //devt.motion.type = XBMC_MOUSEMOTION;
     devt.motion.x = m_mouseX;
     devt.motion.y = m_mouseY;
-    devt.motion.state = 0;
-    devt.motion.which = m_deviceIndex;
+    //devt.motion.state = 0;
+    //devt.motion.which = m_deviceIndex;
   }
   else if (wheel)
   {
      devt.type = XBMC_MOUSEBUTTONUP;
-     devt.button.state = XBMC_RELEASED;
-     devt.button.type = devt.type;
+     //devt.button.state = XBMC_RELEASED;
+     //devt.button.type = devt.type;
      devt.button.x = m_mouseX;
      devt.button.y = m_mouseY;
      devt.button.button = (levt.value<0) ? XBMC_BUTTON_WHEELDOWN:XBMC_BUTTON_WHEELUP;
@@ -642,7 +645,7 @@ bool CLinuxInputDevice::RelEvent(const struct input_event& levt, XBMC_Event& dev
      m_equeue.push_back(devt);
 
      /* prepare and return WHEEL down event */
-     devt.button.state = XBMC_PRESSED;
+     //devt.button.state = XBMC_PRESSED;
      devt.type = XBMC_MOUSEBUTTONDOWN;
   }
   else
@@ -661,11 +664,11 @@ bool CLinuxInputDevice::AbsEvent(const struct input_event& levt, XBMC_Event& dev
   switch (levt.code)
   {
   case ABS_X:
-    m_mouseX = (int)((float)levt.value * g_advancedSettings.m_screenAlign_xStretchFactor) + g_advancedSettings.m_screenAlign_xOffset; // stretch and shift touch x coordinates
+    m_mouseX = (int)((float)levt.value * CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_screenAlign_xStretchFactor) + CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_screenAlign_xOffset; // stretch and shift touch x coordinates
     break;
 
   case ABS_Y:
-    m_mouseY = (int)((float)levt.value * g_advancedSettings.m_screenAlign_yStretchFactor) + g_advancedSettings.m_screenAlign_yOffset; // stretch and shift touch y coordinates
+    m_mouseY = (int)((float)levt.value * CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_screenAlign_yStretchFactor) + CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_screenAlign_yOffset; // stretch and shift touch y coordinates
     break;
 
   case ABS_MISC:
@@ -678,13 +681,13 @@ bool CLinuxInputDevice::AbsEvent(const struct input_event& levt, XBMC_Event& dev
   }
 
   devt.type = XBMC_MOUSEMOTION;
-  devt.motion.type = XBMC_MOUSEMOTION;
+  //devt.motion.type = XBMC_MOUSEMOTION;
   devt.motion.x = m_mouseX;
   devt.motion.y = m_mouseY;
-  devt.motion.state = 0;
-  devt.motion.xrel = 0;
-  devt.motion.yrel = 0;
-  devt.motion.which = m_deviceIndex;
+  //devt.motion.state = 0;
+  //devt.motion.xrel = 0;
+  //devt.motion.yrel = 0;
+  //devt.motion.which = m_deviceIndex;
 
   return true;
 }
@@ -714,7 +717,7 @@ bool CLinuxInputDevice::mtAbsEvent(const struct input_event& levt)
   case ABS_MT_POSITION_X:
     if (m_mt_currentSlot < TOUCH_MAX_POINTERS)
     {
-      m_mt_x[m_mt_currentSlot] = (int)((float)levt.value * g_advancedSettings.m_screenAlign_xStretchFactor) + g_advancedSettings.m_screenAlign_xOffset; // stretch and shift touch x coordinates
+      m_mt_x[m_mt_currentSlot] = (int)((float)levt.value * CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_screenAlign_xStretchFactor) + CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_screenAlign_xOffset; // stretch and shift touch x coordinates
       if (m_mt_event[m_mt_currentSlot] == TouchInputUnchanged)
         m_mt_event[m_mt_currentSlot] = TouchInputMove;
     }
@@ -723,7 +726,7 @@ bool CLinuxInputDevice::mtAbsEvent(const struct input_event& levt)
   case ABS_MT_POSITION_Y:
     if (m_mt_currentSlot < TOUCH_MAX_POINTERS)
     {
-      m_mt_y[m_mt_currentSlot] = (int)((float)levt.value * g_advancedSettings.m_screenAlign_yStretchFactor) + g_advancedSettings.m_screenAlign_yOffset; // stretch and shift touch y coordinates;
+      m_mt_y[m_mt_currentSlot] = (int)((float)levt.value * CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_screenAlign_yStretchFactor) + CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_screenAlign_yOffset; // stretch and shift touch y coordinates;
       if (m_mt_event[m_mt_currentSlot] == TouchInputUnchanged)
         m_mt_event[m_mt_currentSlot] = TouchInputMove;
     }
@@ -749,14 +752,16 @@ bool CLinuxInputDevice::mtSynEvent(const struct input_event& levt)
     /* While the comments of ITouchInputHandler::UpdateTouchPointer() say
        "If there's an event for every touch action this method does not need to be called at all"
        gesture detection currently doesn't work properly without this call. */
-    CGenericTouchInputHandler::GetInstance().UpdateTouchPointer(ptr, m_mt_x[ptr], m_mt_y[ptr], nanotime, size);
+    //CGenericTouchInputHandler::GetInstance().UpdateTouchPointer(ptr, m_mt_x[ptr], m_mt_y[ptr], nanotime, size);
+    CGenericTouchInputHandler::GetInstance().UpdateTouchPointer(ptr, m_mt_x[ptr], m_mt_y[ptr], nanotime);
   }
 
   for (int ptr=0; ptr < TOUCH_MAX_POINTERS; ptr++)
   {
     if (m_mt_event[ptr] != TouchInputUnchanged)
     {
-      CGenericTouchInputHandler::GetInstance().HandleTouchInput(m_mt_event[ptr], m_mt_x[ptr], m_mt_y[ptr], nanotime, ptr, size);
+      //CGenericTouchInputHandler::GetInstance().HandleTouchInput(m_mt_event[ptr], m_mt_x[ptr], m_mt_y[ptr], nanotime, ptr, size);
+      CGenericTouchInputHandler::GetInstance().HandleTouchInput(m_mt_event[ptr], m_mt_x[ptr], m_mt_y[ptr], nanotime, ptr);
       m_mt_event[ptr] = TouchInputUnchanged;
     }
   }

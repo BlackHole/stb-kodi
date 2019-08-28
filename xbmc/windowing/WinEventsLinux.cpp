@@ -29,6 +29,7 @@
 #include "powermanagement/PowerManager.h"
 #include "peripherals/Peripherals.h"
 #include "ServiceBroker.h"
+#include "platform/linux/input/LinuxInputDevices.h"
 
 
 bool CWinEventsLinux::m_initialized = false;
