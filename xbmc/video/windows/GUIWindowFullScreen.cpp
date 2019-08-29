@@ -32,6 +32,8 @@
 #include "guilib/guiinfo/GUIInfoLabels.h"
 #include "video/ViewModeSettings.h"
 
+#include "utils/log.h"
+
 #include <stdio.h>
 #include <algorithm>
 #if defined(TARGET_DARWIN)
@@ -82,10 +84,12 @@ bool CGUIWindowFullScreen::OnAction(const CAction &action)
   switch (action.GetID())
   {
   case ACTION_SHOW_OSD:
+    CLog::Log(LOGNOTICE, "CGUIWindowFullScreen::%s: ACTION_SHOW_OSD...", __FUNCTION__);
     ToggleOSD();
     return true;
 
   case ACTION_TRIGGER_OSD:
+    CLog::Log(LOGNOTICE, "CGUIWindowFullScreen::%s: ACTION_TRIGGER_OSD...", __FUNCTION__);
     TriggerOSD();
     return true;
 
@@ -110,6 +114,7 @@ bool CGUIWindowFullScreen::OnAction(const CAction &action)
 
   case ACTION_SHOW_GUI:
     {
+      CLog::Log(LOGNOTICE, "CGUIWindowFullScreen::%s: ACTION_SHOW_GUI...", __FUNCTION__);
       // switch back to the menu
       CServiceBroker::GetGUI()->GetWindowManager().PreviousWindow();
       return true;
@@ -117,6 +122,7 @@ bool CGUIWindowFullScreen::OnAction(const CAction &action)
     break;
 
   case ACTION_SHOW_OSD_TIME:
+    CLog::Log(LOGNOTICE, "CGUIWindowFullScreen::%s: ACTION_SHOW_OSD_TIME...", __FUNCTION__);
     m_bShowCurrentTime = !m_bShowCurrentTime;
     CServiceBroker::GetGUI()->GetInfoManager().GetInfoProviders().GetPlayerInfoProvider().SetShowTime(m_bShowCurrentTime);
     return true;
@@ -124,9 +130,11 @@ bool CGUIWindowFullScreen::OnAction(const CAction &action)
 
   case ACTION_SHOW_INFO:
     {
+      CLog::Log(LOGNOTICE, "CGUIWindowFullScreen::%s: ACTION_SHOW_INFO...", __FUNCTION__);
       CGUIDialogFullScreenInfo* pDialog = CServiceBroker::GetGUI()->GetWindowManager().GetWindow<CGUIDialogFullScreenInfo>(WINDOW_DIALOG_FULLSCREEN_INFO);
       if (pDialog)
       {
+        CLog::Log(LOGNOTICE, "CGUIWindowFullScreen::%s: ACTION_SHOW_INFO...if (pDialog)", __FUNCTION__);
         CFileItem item(g_application.CurrentFileItem());
         pDialog->Open();
         return true;
@@ -136,6 +144,7 @@ bool CGUIWindowFullScreen::OnAction(const CAction &action)
 
   case ACTION_ASPECT_RATIO:
     { // toggle the aspect ratio mode (only if the info is onscreen)
+      CLog::Log(LOGNOTICE, "CGUIWindowFullScreen::%s: ACTION_ASPECT_RATIO...", __FUNCTION__);
       if (m_dwShowViewModeTimeout)
       {
         CVideoSettings vs = g_application.GetAppPlayer().GetVideoSettings();
@@ -143,6 +152,7 @@ bool CGUIWindowFullScreen::OnAction(const CAction &action)
         g_application.GetAppPlayer().SetRenderViewMode(vs.m_ViewMode, vs.m_CustomZoomAmount,
                                                    vs.m_CustomPixelRatio, vs.m_CustomVerticalShift,
                                                    vs.m_CustomNonLinStretch);
+        CLog::Log(LOGNOTICE, "CGUIWindowFullScreen::%s: ACTION_ASPECT_RATIO...if (m_bShowViewModeTimeout)", __FUNCTION__);
       }
       else
         m_viewModeChanged = true;
@@ -152,6 +162,7 @@ bool CGUIWindowFullScreen::OnAction(const CAction &action)
     break;
   case ACTION_SHOW_PLAYLIST:
     {
+	  //  CLog::Log(LOGNOTICE, "CGUIWindowFullScreen::%s: ACTION_SHOW_PLAYLIST...", __FUNCTION__);
       CFileItem item(g_application.CurrentFileItem());
       if (item.HasPVRChannelInfoTag())
         CServiceBroker::GetGUI()->GetWindowManager().ActivateWindow(WINDOW_DIALOG_PVR_OSD_CHANNELS);
@@ -178,12 +189,14 @@ bool CGUIWindowFullScreen::OnAction(const CAction &action)
 
 void CGUIWindowFullScreen::ClearBackground()
 {
+  CLog::Log(LOGNOTICE, "CGUIWindowFullScreen::%s: ", __FUNCTION__);
   if (g_application.GetAppPlayer().IsRenderingVideoLayer())
     CServiceBroker::GetWinSystem()->GetGfxContext().Clear(0);
 }
 
 void CGUIWindowFullScreen::OnWindowLoaded()
 {
+//	CLog::Log(LOGNOTICE, "CGUIWindowFullScreen::%s: ", __FUNCTION__);
   CGUIWindow::OnWindowLoaded();
   // override the clear colour - we must never clear fullscreen
   m_clearBackground = 0;
@@ -193,6 +206,7 @@ void CGUIWindowFullScreen::OnWindowLoaded()
   {
     if( pProgress->GetInfo() == 0 || !pProgress->HasVisibleCondition())
     {
+	  //  CLog::Log(LOGNOTICE, "CGUIWindowFullScreen::%s: pProgress->GetInfo() == 0", __FUNCTION__);
       pProgress->SetInfo(PLAYER_PROGRESS);
       pProgress->SetVisibleCondition("player.displayafterseek");
       pProgress->SetVisible(true);
@@ -202,6 +216,7 @@ void CGUIWindowFullScreen::OnWindowLoaded()
   CGUILabelControl* pLabel = dynamic_cast<CGUILabelControl*>(GetControl(LABEL_BUFFERING));
   if(pLabel && !pLabel->HasVisibleCondition())
   {
+	  //CLog::Log(LOGNOTICE, "CGUIWindowFullScreen::%s: !pLabel->HasVisibleCondition()", __FUNCTION__);
     pLabel->SetVisibleCondition("player.caching");
     pLabel->SetVisible(true);
   }
@@ -209,6 +224,7 @@ void CGUIWindowFullScreen::OnWindowLoaded()
   pLabel = dynamic_cast<CGUILabelControl*>(GetControl(LABEL_CURRENT_TIME));
   if(pLabel && !pLabel->HasVisibleCondition())
   {
+	  //CLog::Log(LOGNOTICE, "CGUIWindowFullScreen::%s: !pLabel->HasVisibleCondition()", __FUNCTION__);
     pLabel->SetVisibleCondition("player.displayafterseek");
     pLabel->SetVisible(true);
     pLabel->SetLabel("$INFO(VIDEOPLAYER.TIME) / $INFO(VIDEOPLAYER.DURATION)");
@@ -221,6 +237,7 @@ bool CGUIWindowFullScreen::OnMessage(CGUIMessage& message)
   {
   case GUI_MSG_WINDOW_INIT:
     {
+	  //  CLog::Log(LOGNOTICE, "CGUIWindowFullScreen::%s: GUI_MSG_WINDOW_INIT...", __FUNCTION__);
       // check whether we've come back here from a window during which time we've actually
       // stopped playing videos
       if (message.GetParam1() == WINDOW_INVALID && !g_application.GetAppPlayer().IsPlayingVideo())
@@ -248,6 +265,7 @@ bool CGUIWindowFullScreen::OnMessage(CGUIMessage& message)
     }
   case GUI_MSG_WINDOW_DEINIT:
     {
+	  //  CLog::Log(LOGNOTICE, "CGUIWindowFullScreen::%s: GUI_MSG_WINDOW_DEINIT...", __FUNCTION__);
       // close all active modal dialogs
       CServiceBroker::GetGUI()->GetWindowManager().CloseInternalModalDialogs(true);
 
@@ -261,6 +279,7 @@ bool CGUIWindowFullScreen::OnMessage(CGUIMessage& message)
     }
   case GUI_MSG_SETFOCUS:
   case GUI_MSG_LOSTFOCUS:
+	  //CLog::Log(LOGNOTICE, "CGUIWindowFullScreen::%s: FOCUS", __FUNCTION__);
     if (message.GetSenderId() != WINDOW_FULLSCREEN_VIDEO) return true;
     break;
   }
@@ -290,6 +309,7 @@ EVENT_RESULT CGUIWindowFullScreen::OnMouseEvent(const CPoint &point, const CMous
 
 void CGUIWindowFullScreen::FrameMove()
 {
+  CLog::Log(LOGNOTICE, "CGUIWindowFullScreen::%s:", __FUNCTION__);
   float playspeed = g_application.GetAppPlayer().GetPlaySpeed();
   if (playspeed != 1.0 && !g_application.GetAppPlayer().HasGame())
     CServiceBroker::GetGUI()->GetInfoManager().GetInfoProviders().GetPlayerInfoProvider().SetDisplayAfterSeek();
@@ -309,6 +329,7 @@ void CGUIWindowFullScreen::FrameMove()
   if (m_dwShowViewModeTimeout)
   {
     RESOLUTION_INFO res = CServiceBroker::GetWinSystem()->GetGfxContext().GetResInfo();
+    CLog::Log(LOGNOTICE, "CGUIWindowFullScreen::%s: RESOLUTION_INFO", __FUNCTION__);
 
     {
       // get the "View Mode" string
@@ -369,6 +390,7 @@ void CGUIWindowFullScreen::FrameMove()
   {
     if (m_dwShowViewModeTimeout)
     {
+      //CLog::Log(LOGNOTICE, "CGUIWindowFullScreen::%s: if (m_bShowViewModeInfo)", __FUNCTION__);
       SET_CONTROL_VISIBLE(LABEL_ROW1);
       SET_CONTROL_VISIBLE(LABEL_ROW2);
       SET_CONTROL_VISIBLE(LABEL_ROW3);
@@ -376,6 +398,7 @@ void CGUIWindowFullScreen::FrameMove()
     }
     else
     {
+      //CLog::Log(LOGNOTICE, "CGUIWindowFullScreen::%s: !if (m_bShowViewModeInfo)", __FUNCTION__);
       SET_CONTROL_HIDDEN(LABEL_ROW1);
       SET_CONTROL_HIDDEN(LABEL_ROW2);
       SET_CONTROL_HIDDEN(LABEL_ROW3);
@@ -417,6 +440,7 @@ void CGUIWindowFullScreen::RenderEx()
 
 void CGUIWindowFullScreen::SeekChapter(int iChapter)
 {
+  CLog::Log(LOGNOTICE, "CGUIWindowFullScreen::%s: ", __FUNCTION__);
   g_application.GetAppPlayer().SeekChapter(iChapter);
 
   // Make sure gui items are visible.
@@ -425,6 +449,7 @@ void CGUIWindowFullScreen::SeekChapter(int iChapter)
 
 void CGUIWindowFullScreen::ToggleOSD()
 {
+  CLog::Log(LOGNOTICE, "CGUIWindowFullScreen::%s: ", __FUNCTION__);
   CGUIDialog *pOSD = GetOSD();
   if (pOSD)
   {
@@ -439,6 +464,7 @@ void CGUIWindowFullScreen::ToggleOSD()
 
 void CGUIWindowFullScreen::TriggerOSD()
 {
+  CLog::Log(LOGNOTICE, "CGUIWindowFullScreen::%s: ", __FUNCTION__);
   CGUIDialog *pOSD = GetOSD();
   if (pOSD && !pOSD->IsDialogRunning())
   {

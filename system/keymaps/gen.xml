@@ -1,0 +1,73 @@
+<keymap>
+  <global>
+    <keyboard>
+      <key id="61596">mute</key>
+      <key id="61625">volumeup</key>
+      <key id="61597">volumedown</key>
+      <key id="61588">info</key>
+    </keyboard>
+  </global>
+  <music>
+    <keyboard>
+      <key id="61625">volumeup</key>
+      <key id="61596">mute</key>
+      <key id="61597">volumedown</key>
+    </keyboard>
+  </music>
+  <videos>
+    <keyboard>
+      <key id="61568">up</key>
+      <key id="61569">down</key>
+      <key id="61572">pageup</key>
+      <key id="61573">pagedown</key>
+      <key id="61520">parentfolder</key>
+      <key id="61453">select</key>
+      <key id="61588">info</key>
+      <key id="61589">contextmenu</key>
+      <key id="61510">firstpage</key>
+      <key id="61516">lastpage</key>
+      <key id="61520">playpause</key>
+      <key id="61523">stop</key>
+      <key id="61626">skipnext</key>
+      <key id="61627">skipprevious</key>
+      <key id="61588">osd</key>
+      <key id="61596">mute</key>
+      <key id="61625">volumeup</key>
+      <key id="61597">volumedown</key>
+      <key id="61571">nextpicture</key>
+      <key id="61570">previouspicture</key>
+      <key id="61570">left</key><key id="61571">right</key>
+      <key id="61489">smallstepback</key>
+      <key id="61492">stepback</key>
+      <key id="61494">stepforward</key>
+      <key id="61497">bigstepforward</key>
+      <key id="61495">bigstepback</key>
+      <key id="61626">fastforward</key>
+      <key id="61627">rewind</key>
+    </keyboard>
+  </videos>
+  <osdaudiosettings>
+    <keyboard>
+      <key id="61596">mute</key>
+      <key id="61625">volumeup</key>
+      <key id="61597">volumedown</key>
+      <key id="61626">skipnext</key>
+      <key id="61627">skipprevious</key>
+    </keyboard>
+  </osdaudiosettings>
+  <fullscreenvideo>
+    <keyboard>
+      <key id="61568">up</key>
+      <key id="61569">down</key>
+      <key id="61572">pageup</key>
+      <key id="61573">pagedown</key>
+      <key id="61576">firstpage</key>
+      <key id="61577">lastpage</key>
+      <key id="61571">nextpicture</key>
+      <key id="61570">previouspicture</key>
+      <key id="61596">mute</key>
+      <key id="61625">volumeup</key>
+      <key id="61597">volumedown</key>
+    </keyboard>
+  </fullscreenvideo>
+</keymap>

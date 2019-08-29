@@ -18,6 +18,8 @@
 #include "ServiceBroker.h"
 #include "settings/MediaSettings.h"
 
+#include "utils/log.h"
+
 CApplicationPlayer::CApplicationPlayer()
 {
 
@@ -146,6 +148,7 @@ bool CApplicationPlayer::OpenFile(const CFileItem& item, const CPlayerOptions& o
   m_videoStreamUpdate.SetExpired();
   m_subtitleStreamUpdate.SetExpired();
 
+  CLog::Log(LOGNOTICE, "CApplicationPlayer::%s: iResult=%d %s", __FUNCTION__, iResult, iResult == PLAYBACK_CANCELED ? "PLAYBACK_CANCELED":"PLAYBACK_OK?" );.
   return ret;
 }
 

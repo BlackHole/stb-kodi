@@ -21,6 +21,7 @@ public:
   int64_t Seek(int64_t offset, int whence) override;
   bool IsEOF() override;
   int64_t GetLength() override;
+  bool Pause(double dTime) { return false; };
 
 protected:
   uint8_t* m_pData;

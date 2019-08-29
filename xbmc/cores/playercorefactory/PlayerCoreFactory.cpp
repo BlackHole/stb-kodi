@@ -25,6 +25,10 @@
 #include "utils/XMLUtils.h"
 #include <sstream>
 
+#if defined(HAVE_LIBGSTREAMER)
+  #include "cores/GstPlayer/GstPlayer.h"
+#endif
+
 #define PLAYERCOREFACTORY_XML "playercorefactory.xml"
 
 CPlayerCoreFactory::CPlayerCoreFactory(const CProfileManager &profileManager) :
@@ -316,6 +320,12 @@ bool CPlayerCoreFactory::LoadConfiguration(const std::string &file, bool clear)
     m_vecCoreSelectionRules.clear();
 
     // Builtin players
+#if defined(HAVE_LIBGSTREAMER)
+    CPlayerCoreConfig* GstPlayer = new CPlayerCoreConfig("GstPlayer", "gstreamer", nullptr);
+    GstPlayer->m_bPlaysAudio = true;
+    GstPlayer->m_bPlaysVideo = true;
+    m_vecPlayerConfigs.push_back(GstPlayer);
+#endif
     CPlayerCoreConfig* VideoPlayer = new CPlayerCoreConfig("VideoPlayer", "video", nullptr);
     VideoPlayer->m_bPlaysAudio = true;
     VideoPlayer->m_bPlaysVideo = true;
@@ -351,6 +361,10 @@ bool CPlayerCoreFactory::LoadConfiguration(const std::string &file, bool clear)
         internaltype = "video";
       else if (type == "paplayer")
         internaltype = "music";
+#if defined(HAVE_LIBGSTREAMER)
+      else if (type == "gstplayer")
+        internaltype = "gstreamer";
+#endif
       else if (type == "externalplayer")
         internaltype = "external";
 

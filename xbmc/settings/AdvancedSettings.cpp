@@ -157,7 +157,7 @@ void CAdvancedSettings::Initialize()
 
   m_videoPPFFmpegDeint = "linblenddeint";
   m_videoPPFFmpegPostProc = "ha:128:7,va,dr";
-  m_videoDefaultPlayer = "VideoPlayer";
+  m_videoDefaultPlayer = "GstPlayer";
   m_videoIgnoreSecondsAtStart = 3*60;
   m_videoIgnorePercentAtEnd   = 8.0f;
   m_videoPlayCountMinimumPercent = 90.0f;

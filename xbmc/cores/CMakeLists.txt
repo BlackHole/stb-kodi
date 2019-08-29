@@ -14,7 +14,7 @@ if(CORE_PLATFORM_NAME_LC STREQUAL rbpi)
 endif()
 
 if(CORE_PLATFORM_NAME_LC STREQUAL vuplus)
-  add_subdirectory(gstplayer)
+  add_subdirectory(GstPlayer)
 endif()
 
 core_add_library(cores)

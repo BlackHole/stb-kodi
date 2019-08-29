@@ -2811,13 +2811,16 @@ bool CApplication::PlayFile(CFileItem item, const std::string& player, bool bRes
   // if we have a stacked set of files, we need to setup our stack routines for
   // "seamless" seeking and total time of the movie etc.
   // will recall with restart set to true
-  if (item.IsStack())
+  if (item.IsStack()) {
+    CLog::Log(LOGNOTICE, "CApplication::%s: item.IsStack()", __FUNCTION__);
     return PlayStack(item, bRestart);
+  }
 
   CPlayerOptions options;
 
   if (item.HasProperty("StartPercent"))
   {
+    CLog::Log(LOGNOTICE, "CApplication::%s: item.HasProperty(StartPercent)", __FUNCTION__);
     options.startpercent = item.GetProperty("StartPercent").asDouble();
     item.m_lStartOffset = 0;
   }
@@ -2826,6 +2829,7 @@ bool CApplication::PlayFile(CFileItem item, const std::string& player, bool bRes
 
   if (bRestart)
   {
+	  CLog::Log(LOGNOTICE, "CApplication::%s: bRestart", __FUNCTION__);
     // have to be set here due to playstack using this for starting the file
     if (item.HasVideoInfoTag())
       options.state = item.GetVideoInfoTag()->GetResumePoint().playerState;
@@ -4440,6 +4444,7 @@ double CApplication::GetTime() const
 // consistent with GetTime() and GetTotalTime().
 void CApplication::SeekTime( double dTime )
 {
+  CLog::Log(LOGNOTICE, "%s: dTime=%f", __FUNCTION__, dTime);
   if (m_appPlayer.IsPlaying() && (dTime >= 0.0))
   {
     if (!m_appPlayer.CanSeek())

@@ -13,6 +13,7 @@
 #include "guilib/GUIWindowManager.h"
 #include "threads/Thread.h"
 #include "threads/IRunnable.h"
+#include "utils/log.h"
 
 #define PROGRESS_CONTROL 10
 
@@ -71,9 +72,11 @@ bool CGUIDialogBusy::Wait(IRunnable *runnable, unsigned int displaytime, bool al
 
 bool CGUIDialogBusy::WaitOnEvent(CEvent &event, unsigned int displaytime /* = 100 */, bool allowCancel /* = true */)
 {
+  CLog::Log(LOGNOTICE, "CGUIDialogBusy::%s: displaytime=%d allowCancel=%s", __FUNCTION__, displaytime, allowCancel == true ? "true":"false" );
   bool cancelled = false;
   if (!event.WaitMSec(displaytime))
   {
+    CLog::Log(LOGNOTICE, "CGUIDialogBusy::%s: !event.WaitMSec(displaytime)", __FUNCTION__);
     // throw up the progress
     CGUIDialogBusy* dialog = CServiceBroker::GetGUI()->GetWindowManager().GetWindow<CGUIDialogBusy>(WINDOW_DIALOG_BUSY);
     if (dialog)
@@ -83,18 +86,23 @@ bool CGUIDialogBusy::WaitOnEvent(CEvent &event, unsigned int displaytime /* = 10
         throw std::logic_error("busy dialog already running");
       }
 
+      CLog::Log(LOGNOTICE, "CGUIDialogBusy::%s: dialog->Open();", __FUNCTION__);
       dialog->Open();
 
+      int timer =0;
       while(!event.WaitMSec(1))
       {
+        CLog::Log(LOGNOTICE, "CGUIDialogBusy::%s: !event.WaitMSec timer=%d;", __FUNCTION__,++timer);
         dialog->ProcessRenderLoop(false);
         if (allowCancel && dialog->IsCanceled())
         {
+          CLog::Log(LOGNOTICE, "CGUIDialogBusy::%s: allowCancel && dialog->IsCanceled();", __FUNCTION__);
           cancelled = true;
           break;
         }
       }
 
+      CLog::Log(LOGNOTICE, "CGUIDialogBusy::%s: dialog->Close();", __FUNCTION__);
       dialog->Close(true);
     }
   }

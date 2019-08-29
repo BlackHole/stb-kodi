@@ -11,30 +11,30 @@
   </players>
 
   <rules name="system rules">
-    <rule name="mms/udp" protocols="mms|mmsh|udp" player="VideoPlayer" />
+    <rule name="mms/udp" protocols="mms|mmsh|udp" player="GstPlayer" />
     <rule name="lastfm/shout" protocols="lastfm|shout" player="PAPlayer" />
     <rule name="rtmp" protocols="rtmp" player="videodefaultplayer" />
 
-    <!-- VideoPlayer can play standard rtsp streams -->
+    <!-- GstPlayer can play standard rtsp streams -->
     <rule name="rtsp" protocols="rtsp" filetypes="!(rm|ra)"  player="PAPlayer" />
 
     <!-- Internet streams -->
     <rule name="streams" internetstream="true">
-      <rule name="aacp/sdp" mimetypes="audio/aacp|application/sdp" player="VideoPlayer" />
+      <rule name="aacp/sdp" mimetypes="audio/aacp|application/sdp" player="GstPlayer" />
       <rule name="mp2" mimetypes="application/octet-stream" filetypes="mp2" player="PAPlayer" />
     </rule>
 
     <!-- DVDs -->
-    <rule name="dvd" dvd="true" player="VideoPlayer" />
-    <rule name="dvdimage" dvdimage="true" player="VideoPlayer" />
+    <rule name="dvd" dvd="true" player="GstPlayer" />
+    <rule name="dvdimage" dvdimage="true" player="GstPlayer" />
 
-    <!-- Only VideoPlayer can handle these normally -->
-    <rule name="sdp/asf" filetypes="sdp|asf" player="VideoPlayer" />
+    <!-- Only GstPlayer can handle these normally -->
+    <rule name="sdp/asf" filetypes="sdp|asf" player="GstPlayer" />
 
-    <!-- Pass these to VideoPlayer as we do not know if they are audio or video -->
-    <rule name="nsv" filetypes="nsv" player="VideoPlayer" />
+    <!-- Pass these to GstPlayer as we do not know if they are audio or video -->
+    <rule name="nsv" filetypes="nsv" player="GstPlayer" />
 
-    <!-- pvr radio channels should be played by VideoPlayer because they need buffering -->
-    <rule name="radio" filetypes="pvr" filename=".*/radio/.*" player="VideoPlayer" />
+    <!-- pvr radio channels should be played by GstPlayer because they need buffering -->
+    <rule name="radio" filetypes="pvr" filename=".*/radio/.*" player="GstPlayer" />
   </rules>
 </playercorefactory>

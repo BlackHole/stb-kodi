@@ -20,6 +20,10 @@
 #include "system.h"
 #include "utils/log.h"
 
+#if defined(HAVE_LIBGSTREAMER)
+  #include "cores/GstPlayer/GstPlayer.h"
+#endif
+
 class CPlayerCoreConfig
 {
 public:
@@ -87,6 +91,12 @@ public:
     {
       pPlayer = new KODI::RETRO::CRetroPlayer(callback);
     }
+#if defined(HAVE_LIBGSTREAMER)
+    else if (m_type.compare("gstreamer") == 0)
+    {
+      pPlayer = new CGstPlayer(callback);
+    }
+#endif
     else if (m_type.compare("external") == 0)
     {
       pPlayer = new CExternalPlayer(callback);
