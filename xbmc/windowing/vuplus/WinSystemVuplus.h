@@ -39,6 +39,12 @@ public:
   bool Show(bool raise = true) override;
   virtual void Register(IDispResource *resource);
   virtual void Unregister(IDispResource *resource);
+
+  void MessagePush(XBMC_Event *newEvent);
+
+  // winevents override
+  bool MessagePump() override;
+
 protected:
   CVuplusUtils *m_vuplus;
   EGLDisplay m_nativeDisplay;

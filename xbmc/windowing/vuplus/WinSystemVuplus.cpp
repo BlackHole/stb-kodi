@@ -61,6 +61,7 @@ CWinSystemVuplus::CWinSystemVuplus()
 
   m_vuplus = new CVuplusUtils();
 
+  CLog::Log(LOGINFO, "CWinSystemVuplus::CWinSystemVuplus(): Register CWinEventsLinux and reset");
   m_winEvents.reset(new CWinEventsLinux());
 
   // Register sink
@@ -261,4 +262,16 @@ void CWinSystemVuplus::Unregister(IDispResource *resource)
   std::vector<IDispResource*>::iterator i = find(m_resources.begin(), m_resources.end(), resource);
   if (i != m_resources.end())
     m_resources.erase(i);
+}
+
+//Needed to manage LinuxInputDevices
+
+void CWinSystemVuplus::MessagePush(XBMC_Event *newEvent)
+{
+  dynamic_cast<CWinEventsLinux&>(*m_winEvents).MessagePush(newEvent);
+}
+
+bool CWinSystemVuplus::MessagePump()
+{
+  return m_winEvents->MessagePump();
 }
