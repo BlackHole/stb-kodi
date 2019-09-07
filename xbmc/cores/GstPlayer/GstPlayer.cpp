@@ -37,6 +37,7 @@
 #include "cores/DataCacheCore.h"
 #include "input/InputManager.h"
 #include "settings/Settings.h"
+#include "settings/SettingsComponent.h"
 #include "settings/AdvancedSettings.h"
 #include "settings/DisplaySettings.h"
 #include "threads/SystemClock.h"

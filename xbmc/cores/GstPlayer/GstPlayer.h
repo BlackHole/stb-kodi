@@ -1,4 +1,3 @@
-#pragma once
 
 /*
  *      Copyright (C) 2005-2015 Team Kodi
@@ -19,6 +18,8 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
+
+#pragma once
 
 #include <string>
 #include "system.h"
@@ -53,8 +54,8 @@ public:
 	virtual int OnDVDNavResult(void* pData, int iMessage) { return 0; };
 	virtual void GetVideoResolution(unsigned int &width, unsigned int &height);
 	
-	CGstPlayer(IPlayerCallback& callback);
-	virtual ~CGstPlayer();
+	explicit CGstPlayer(IPlayerCallback& callback);
+	~CGstPlayer() override;
 	virtual bool Initialize(TiXmlElement* pConfig);
 	virtual bool OpenFile(const CFileItem& file, const CPlayerOptions &options);
 	virtual bool CloseFile(bool reopen = false);
