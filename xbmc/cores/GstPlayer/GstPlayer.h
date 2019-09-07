@@ -97,9 +97,9 @@ public:
 	virtual float GetRenderAspectRatio();
 	virtual void TriggerUpdateResolution() { CLog::Log(LOGNOTICE, "%s: ", __FUNCTION__ ); };
 	
-	virtual bool IsRenderingVideo() { true; };
-	virtual bool IsRenderingGuiLayer() { true; };
-	virtual bool IsRenderingVideoLayer() { true; };
+	virtual bool IsRenderingVideo() { return true; };
+	virtual bool IsRenderingGuiLayer() { return true; };
+	virtual bool IsRenderingVideoLayer() { return true; };
 	
 	virtual void SetSubTitleDelay(float fValue = 0.0f);
 	virtual float GetSubTitleDelay();
@@ -110,7 +110,6 @@ public:
 	virtual int64_t GetTime();
 	virtual int64_t GetTotalTime();
 	virtual void SetSpeed(float iSpeed) override;
-	virtual float GetSpeed() override;
 	virtual void ShowOSD(bool bOnoff);
 	virtual void DoAudioWork() {};
 	

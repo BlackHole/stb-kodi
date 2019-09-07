@@ -31,7 +31,8 @@
 
 #include "threads/Thread.h"
 #include "threads/SystemClock.h"
-#include "cores/AudioEngine/AEFactory.h"
+#include "ServiceBroker.h"
+#include "cores/AudioEngine/Engines/ActiveAE/ActiveAE.h"
 
 #define AUDIO_DEV "/dev/dvb/adapter0/audio0"
 
@@ -39,10 +40,10 @@ CGstPlayerAudio::CGstPlayerAudio(CProcessInfo &processInfo): m_processInfo(proce
 {
 	m_processInfo.ResetAudioCodecInfo();
 #if 0
-	CAEFactory::Suspend();
+	CServiceBroker::GetActiveAE()->Suspend();
 	/* wait for AE has completed suspended */
 	XbmcThreads::EndTime timer(1000);
-	while (!timer.IsTimePast() && !CAEFactory::IsSuspended())
+	while (!timer.IsTimePast() && !CServiceBroker::GetActiveAE()->IsSuspended())
 	{
 		usleep(80);
 	}
@@ -57,7 +58,7 @@ CGstPlayerAudio::~CGstPlayerAudio()
 {
 #if 0
 	/* Resume AE processing of XBMC native audio */
-	if (!CAEFactory::Resume())
+	if (!CServiceBroker::GetActiveAE()->Resume())
 	{
 		CLog::Log(LOGFATAL, "CGstPlayerAudio::%s: Failed to restart AudioEngine after return from player",__FUNCTION__);
 	}

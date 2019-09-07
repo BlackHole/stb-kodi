@@ -41,7 +41,7 @@
 #include "settings/DisplaySettings.h"
 #include "threads/SystemClock.h"
 #include "threads/SingleLock.h"
-#include "windowing/WindowingFactory.h"
+#include "windowing/WinSystem.h"
 #include "guilib/GUIWindowManager.h"
 #include "filesystem/MusicDatabaseFile.h"
 #include "dialogs/GUIDialogBusy.h"
@@ -51,10 +51,11 @@
 
 #include "cores/VideoPlayer/VideoPlayer.h"
 
-#include "cores/AudioEngine/AEFactory.h"
+#include "ServiceBroker.h"
+#include "cores/AudioEngine/Engines/ActiveAE/ActiveAE.h"
 
 #include "cores/VideoPlayer/DVDInputStreams/DVDFactoryInputStream.h"
-#include "cores/VideoPlayer/DVDInputStreams/DVDInputStreamPVRManager.h"
+#include "DVDInputStreams/InputStreamPVRBase.h"
 #include "settings/MediaSettings.h"
 #include "storage/MediaManager.h"
 
@@ -80,10 +81,12 @@ CGstPlayer::CGstPlayer(IPlayerCallback& callback)
 	m_pInputStream = NULL;
 	m_canTempo = false;
 	m_processInfo.reset(CProcessInfo::CreateInstance());
+	m_processInfo->SetSpeed(1.0);
+	m_processInfo->SetTempo(1.0);
 	
-	CAEFactory::Suspend();
+	CServiceBroker::GetActiveAE()->Suspend();
 	  
-	while (!CAEFactory::IsSuspended())
+	while (!CServiceBroker::GetActiveAE()->IsSuspended())
 		Sleep(10);
 	
 	CreatePlayers();
@@ -109,7 +112,7 @@ CGstPlayer::~CGstPlayer()
 	
 	DestroyPlayers();
 	
-	CAEFactory::Resume();
+	CServiceBroker::GetActiveAE()->Resume();
 	
 	CLog::Log(LOGNOTICE, "CGstPlayer::%s", __FUNCTION__ );
 }
@@ -120,6 +123,8 @@ bool CGstPlayer::OpenFile(const CFileItem& file, const CPlayerOptions &options)
 		CloseFile();
 	
 	m_bAbortRequest = false;
+	m_processInfo->SetSpeed(1.0);
+	m_processInfo->SetTempo(1.0);
 	m_PlayerOptions = options;
 	m_item = file;
 	// Try to resolve the correct mime type
@@ -129,7 +134,9 @@ bool CGstPlayer::OpenFile(const CFileItem& file, const CPlayerOptions &options)
 	Create();
 	
 	CLog::Log(LOGNOTICE, "CGstPlayer%s: CGUIDialogBusy::WaitOnEvent", __FUNCTION__);
-	CGUIDialogBusy::WaitOnEvent(m_ready, g_advancedSettings.m_videoBusyDialogDelay_ms, false);
+
+	const std::shared_ptr<CAdvancedSettings> advancedSettings = CServiceBroker::GetSettingsComponent()->GetAdvancedSettings();
+	CGUIDialogBusy::WaitOnEvent(m_ready, advancedSettings->m_videoBusyDialogDelay_ms, false);
 	// Playback might have been stopped due to some error
 	if (m_bStop || m_bAbortRequest) {
 		CLog::Log(LOGNOTICE, "CGstPlayer::%s: m_bStop=%s || m_bAbortRequest=%s", __FUNCTION__, m_bStop == true ? "true":"false" ,m_bAbortRequest == true ? "true":"false" ); 
@@ -143,7 +150,7 @@ bool CGstPlayer::CloseFile(bool reopen)
 {
 	m_bAbortRequest = true;
 	
-	g_PVRManager.CloseStream();
+	CServiceBroker::GetPVRManager().CloseStream();
 	m_VideoPlayerVideo->CloseStream();
 	
 	if(m_pInputStream)
@@ -272,17 +279,17 @@ bool CGstPlayer::OpenInputStream()
 
 bool CGstPlayer::SwitchChannel(const CPVRChannelPtr &channel)
 {
-	if (g_PVRManager.IsPlayingChannel(channel))
+	if (CServiceBroker::GetPVRManager().IsPlayingChannel(channel))
 		return false; // desired channel already active, nothing to do.
 
-	if (!g_PVRManager.CheckParentalLock(channel))
+	if (!CServiceBroker::GetPVRManager().CheckParentalLock(channel))
 		return false;
 
 	/* set GUI info */
-	if (!g_PVRManager.PerformChannelSwitch(channel, true))
+	if (!CServiceBroker::GetPVRManager().PerformChannelSwitch(channel, true))
 		return false;
 
-	CDVDInputStreamPVRManager* input = dynamic_cast<CDVDInputStreamPVRManager*>(m_pInputStream);
+	std::shared_ptr<CInputStreamPVRBase> input = std::static_pointer_cast<CInputStreamPVRBase>(m_pInputStream);
 	if (input && input->IsOtherStreamHack())
 	{
 		CLog::Log(LOGWARNING, "CGstPlayer::%s: input->IsOtherStreamHack()", __FUNCTION__);
@@ -298,7 +305,7 @@ bool CGstPlayer::SwitchChannel(const CPVRChannelPtr &channel)
 		//CApplicationMessenger::GetInstance().PostMsg(TMSG_MEDIA_STOP);
 	}
 	
-	//g_PVRManager.SetChannelPreview(false);
+	//CServiceBroker::GetPVRManager().SetChannelPreview(false);
 	ShowPVRChannelInfo();
       
 	return true;
@@ -518,13 +525,7 @@ bool CGstPlayer::IsRecording()
 void CGstPlayer::SetSpeed(float iSpeed)
 {
 	CLog::Log(LOGNOTICE, "CGstPlayer::%s: %f", __FUNCTION__, iSpeed);
-	m_speed = static_cast<int>(iSpeed);
-}
-
-float CGstPlayer::GetSpeed()
-{
-	CLog::Log(LOGNOTICE, "CGstPlayer::%s: %f", __FUNCTION__, m_speed);
-	return m_speed;
+	CDataCacheCore::GetInstance().SetSpeed(1.0, speed);
 }
 
 void CGstPlayer::ShowOSD(bool bOnoff)
@@ -552,7 +553,7 @@ bool CGstPlayer::Initialize(TiXmlElement* pConfig)
 
 void CGstPlayer::Render(bool clear, uint32_t alpha, bool gui)
 {
-	//g_Windowing.ClearBuffers(0.0f);
+	//CServiceBroker::GetWinSystem().ClearBuffers(0.0f);
 
 	//CLog::Log(LOGNOTICE, "CGstPlayer::%s: clear=%s, alpha=%d, gui=%s", __FUNCTION__, clear == false ? "false":"true", (int)alpha, gui == false ? "false":"true");
 }
@@ -578,7 +579,7 @@ bool CGstPlayer::ShowPVRChannelInfo()
 
   if (CSettings::GetInstance().GetInt(CSettings::SETTING_PVRMENU_DISPLAYCHANNELINFO) > 0)
   {
-    g_PVRManager.ShowPlayerInfo(CSettings::GetInstance().GetInt(CSettings::SETTING_PVRMENU_DISPLAYCHANNELINFO));
+    CServiceBroker::GetPVRManager().ShowPlayerInfo(CSettings::GetInstance().GetInt(CSettings::SETTING_PVRMENU_DISPLAYCHANNELINFO));
 
     bReturn = true;
   }
@@ -646,7 +647,7 @@ void CGstPlayer::OnPlaybackStarted()
 	
 	if (m_pInputStream->IsStreamType(DVDSTREAM_TYPE_PVRMANAGER) && 
 		//Url.IsLocalHost() && !IsRecording())
-		Url.IsLocalHost() && !g_PVRManager.IsRecording())
+		Url.IsLocalHost() && !CServiceBroker::GetPVRManager().IsRecording())
 	{
 		FILE *f = fopen("/proc/stb/fp/led0_pattern", "w");
 		if (f)
@@ -695,7 +696,7 @@ bool CGstPlayer::OnAction(const CAction &action)
 				}
 				
 				//g_infoManager.SetDisplayAfterSeek();
-				//g_PVRManager.SetChannelPreview(false);
+				//CServiceBroker::GetPVRManager().SetChannelPreview(false);
 				ShowPVRChannelInfo();
 				return true;
 			}
@@ -717,7 +718,7 @@ bool CGstPlayer::OnAction(const CAction &action)
 					input->NextChannel(false);
 				}
 				//g_infoManager.SetDisplayAfterSeek();
-				//g_PVRManager.SetChannelPreview(false);
+				//CServiceBroker::GetPVRManager().SetChannelPreview(false);
 				ShowPVRChannelInfo();
 				return true;
 			}
@@ -739,7 +740,7 @@ bool CGstPlayer::OnAction(const CAction &action)
 					input->PrevChannel(false);
 				}
 				//g_infoManager.SetDisplayAfterSeek();
-				//g_PVRManager.SetChannelPreview(false);
+				//CServiceBroker::GetPVRManager().SetChannelPreview(false);
 				ShowPVRChannelInfo();
 				return true;
 			}

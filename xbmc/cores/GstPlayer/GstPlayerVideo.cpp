@@ -26,12 +26,15 @@
 #include "system.h"
 #include "URL.h"
 #include "Util.h"
+#include "ServiceBroker.h"
 #include "filesystem/SpecialProtocol.h"
 #include "utils/StringUtils.h"
 #include "utils/URIUtils.h"
 #include "utils/XMLUtils.h"
 #include "utils/log.h"
 #include "settings/AdvancedSettings.h"
+#include "settings/Settings.h"
+#include "settings/SettingsComponent.h"
 #include "messaging/ApplicationMessenger.h"
 
 #define HTTP_TIMEOUT 10
@@ -70,7 +73,8 @@ CGstPlayerVideo::CGstPlayerVideo(IGstPlayerCallback *callback, CProcessInfo &pro
 	gst_init (NULL, FALSE);
 	m_processInfo.SetVideoDecoderName(("Gstreamer Version: %s", (const char *)gst_version_string()), true);
 	m_processInfo.SetAudioDecoderName(("Gstreamer Version: %s", (const char *)gst_version_string()));
-	m_useragent = g_advancedSettings.m_userAgent.c_str();
+	const std::shared_ptr<CAdvancedSettings> advancedSettings = CServiceBroker::GetSettingsComponent()->GetAdvancedSettings();
+	m_useragent = advancedSettings->m_userAgent.c_str();
 	m_buffer_size = 5LL * 1024LL * 1024LL;
 	m_sourceinfo.is_video = TRUE;
 	m_paused = false;
@@ -794,8 +798,8 @@ gboolean CGstPlayerVideo::seekData(GstElement * appsrc, guint64 position, gpoint
 {
 	CGstPlayerVideo *_this = (CGstPlayerVideo*)user_data;
 	
-	printf("CGstPlayerVideo::seekData: offset=%"G_GUINT64_FORMAT " m_offset=%d m_length=%d", position, _this->m_offset, _this->m_length);
-	CLog::Log(LOGNOTICE, "CGstPlayerVideo::seekData: offset=%"G_GUINT64_FORMAT " m_offset=%d m_length=%d", position, _this->m_offset, _this->m_length);
+	printf("CGstPlayerVideo::seekData: offset=%" G_GUINT64_FORMAT " m_offset=%d m_length=%d", position, _this->m_offset, _this->m_length);
+	CLog::Log(LOGNOTICE, "CGstPlayerVideo::seekData: offset=%" G_GUINT64_FORMAT " m_offset=%d m_length=%d", position, _this->m_offset, _this->m_length);
 	_this->m_offset = position;
 
 	return TRUE;
@@ -1169,7 +1173,7 @@ void CGstPlayerVideo::handleMessage(GstMessage *msg)
 		}
 			
 		default:
-			g_print("CGstPlayerVideo::%s: %"GST_PTR_FORMAT"\n", __FUNCTION__, msg);
+			g_print("CGstPlayerVideo::%s: %" GST_PTR_FORMAT"\n", __FUNCTION__, msg);
 			break;
 	}
 	//g_free (sourceName);
