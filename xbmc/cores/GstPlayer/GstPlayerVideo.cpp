@@ -113,7 +113,7 @@ bool CGstPlayerVideo::OpenStream(CDVDStreamInfo &hints, const CFileItem &file)
 	{
 		//m_sourceinfo.is_streaming = TRUE;
 
-		m_pInputStream = new CDVDInputStreamFile(m_item);
+		m_pInputStream = new CDVDInputStreamFile(m_item, XFILE::READ_TRUNCATED | XFILE::READ_BITRATE | XFILE::READ_CHUNKED);
 		
 		m_uri = g_strdup((const gchar *) "appsrc://");
 	}

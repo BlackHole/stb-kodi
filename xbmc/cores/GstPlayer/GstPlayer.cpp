@@ -36,9 +36,9 @@
 #include "utils/log.h"
 #include "cores/DataCacheCore.h"
 #include "input/InputManager.h"
+#include "settings/AdvancedSettings.h"
 #include "settings/Settings.h"
 #include "settings/SettingsComponent.h"
-#include "settings/AdvancedSettings.h"
 #include "settings/DisplaySettings.h"
 #include "threads/SystemClock.h"
 #include "threads/SingleLock.h"
@@ -60,7 +60,7 @@
 #include "settings/MediaSettings.h"
 #include "storage/MediaManager.h"
 
-using namespace PVR;
+//using namespace PVR;
 using namespace XFILE;
 
 // Default time after which the item's playcount is incremented
@@ -79,7 +79,7 @@ CGstPlayer::CGstPlayer(IPlayerCallback& callback)
 	,m_ready(true)
 //	,m_messenger("player")
 {
-	m_pInputStream = NULL;
+	m_pInputStream = nullptr;
 	m_canTempo = false;
 	m_processInfo.reset(CProcessInfo::CreateInstance());
 	m_processInfo->SetSpeed(1.0);
@@ -109,7 +109,7 @@ CGstPlayer::~CGstPlayer()
 {
 	CloseFile();
 	
-	SAFE_DELETE(m_pInputStream);
+	m_pInputStream.reset();
 	
 	DestroyPlayers();
 	
@@ -134,16 +134,6 @@ bool CGstPlayer::OpenFile(const CFileItem& file, const CPlayerOptions &options)
 	
 	Create();
 	
-	CLog::Log(LOGNOTICE, "CGstPlayer%s: CGUIDialogBusy::WaitOnEvent", __FUNCTION__);
-
-	const std::shared_ptr<CAdvancedSettings> advancedSettings = CServiceBroker::GetSettingsComponent()->GetAdvancedSettings();
-	CGUIDialogBusy::WaitOnEvent(m_ready, advancedSettings->m_videoBusyDialogDelay_ms, false);
-	// Playback might have been stopped due to some error
-	if (m_bStop || m_bAbortRequest) {
-		CLog::Log(LOGNOTICE, "CGstPlayer::%s: m_bStop=%s || m_bAbortRequest=%s", __FUNCTION__, m_bStop == true ? "true":"false" ,m_bAbortRequest == true ? "true":"false" ); 
-		CloseFile();
-		return false;
-	}
 	return true;
 }
 
@@ -151,7 +141,6 @@ bool CGstPlayer::CloseFile(bool reopen)
 {
 	m_bAbortRequest = true;
 	
-	CServiceBroker::GetPVRManager().CloseStream();
 	m_VideoPlayerVideo->CloseStream();
 	
 	if(m_pInputStream)
@@ -167,8 +156,9 @@ bool CGstPlayer::CloseFile(bool reopen)
 
 bool CGstPlayer::OpenInputStream()
 {
-	if(m_pInputStream)
-		SAFE_DELETE(m_pInputStream);
+	if (m_pInputStream.use_count() > 1)
+		throw std::runtime_error("m_pInputStream reference count is greater than 1");
+	m_pInputStream.reset();
 
 	CLog::Log(LOGNOTICE, "Creating InputStream");
 
@@ -228,12 +218,8 @@ bool CGstPlayer::OpenInputStream()
 				}
 			}
 		} // end loop over all subtitle files
-
-		CMediaSettings::GetInstance().GetCurrentVideoSettings().m_SubtitleCached = true;
 	}
 
-	SetAVDelay(CMediaSettings::GetInstance().GetCurrentVideoSettings().m_AudioDelay);
-	SetSubTitleDelay(CMediaSettings::GetInstance().GetCurrentVideoSettings().m_SubtitleDelay);
 	//m_clock.Reset();
 	//m_dvd.Clear();
 	//m_errorCount = 0;
@@ -269,46 +255,14 @@ bool CGstPlayer::OpenInputStream()
 	CLog::Log(LOGNOTICE, "CGstPlayer%s: m_ready.Set()", __FUNCTION__);
 	m_ready.Set();
 
-	if (CSettings::GetInstance().GetBool(CSettings::SETTING_VIDEOPLAYER_USEDISPLAYASCLOCK) &&
-			!m_pInputStream->IsRealtime())
+	bool realtime = m_pInputStream->IsRealtime();
+
+	if (CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(CSettings::SETTING_VIDEOPLAYER_USEDISPLAYASCLOCK) &&
+			!realtime)
 		m_canTempo = true;
 	else
 		m_canTempo = false;
 
-	return true;
-}
-
-bool CGstPlayer::SwitchChannel(const CPVRChannelPtr &channel)
-{
-	if (CServiceBroker::GetPVRManager().IsPlayingChannel(channel))
-		return false; // desired channel already active, nothing to do.
-
-	if (!CServiceBroker::GetPVRManager().CheckParentalLock(channel))
-		return false;
-
-	/* set GUI info */
-	if (!CServiceBroker::GetPVRManager().PerformChannelSwitch(channel, true))
-		return false;
-
-	std::shared_ptr<CInputStreamPVRBase> input = std::static_pointer_cast<CInputStreamPVRBase>(m_pInputStream);
-	if (input && input->IsOtherStreamHack())
-	{
-		CLog::Log(LOGWARNING, "CGstPlayer::%s: input->IsOtherStreamHack()", __FUNCTION__);
-	}
-	if (input && input->SelectChannel(channel))
-	{
-		CLog::Log(LOGNOTICE, "CGstPlayer::%s: input->SelectChannel(channel)", __FUNCTION__);
-	}
-	else
-	{
-		CLog::Log(LOGWARNING, "CGstPlayer::%s - failed to switch channel. playback stopped", __FUNCTION__);
-		return false;
-		//CApplicationMessenger::GetInstance().PostMsg(TMSG_MEDIA_STOP);
-	}
-	
-	//CServiceBroker::GetPVRManager().SetChannelPreview(false);
-	ShowPVRChannelInfo();
-      
 	return true;
 }
 
@@ -461,72 +415,27 @@ bool CGstPlayer::SeekTimeRelative(int64_t iTime)
 
 int64_t CGstPlayer::GetTime() // in milliseconds
 {
-	if(m_pInputStream->IsStreamType(DVDSTREAM_TYPE_PVRMANAGER))
-	{
-		CDVDInputStreamPVRManager* input = dynamic_cast<CDVDInputStreamPVRManager*>(m_pInputStream);
-		if (input)
-		{
-			return (int64_t)input->GetTime();
-		}
-		else
-			return 0;
-	}
-	else
-		return m_VideoPlayerVideo->GetTime();
+	return m_VideoPlayerVideo->GetTime();
 }
 
 int64_t CGstPlayer::GetTotalTime() // in milliseconds
 {
-	if(m_pInputStream->IsStreamType(DVDSTREAM_TYPE_PVRMANAGER))
-	{
-		CDVDInputStreamPVRManager* input = dynamic_cast<CDVDInputStreamPVRManager*>(m_pInputStream);
-		if (input)
-		{
-			return (int64_t)input->GetTotalTime();
-		}
-		else
-			return 0;
-	}
-	else
-		return m_VideoPlayerVideo->GetTotalTime();
+	return m_VideoPlayerVideo->GetTotalTime();
 }
 
 bool CGstPlayer::CanRecord()
 {
-	if(m_pInputStream->IsStreamType(DVDSTREAM_TYPE_PVRMANAGER))
-	{
-		CDVDInputStreamPVRManager* input = dynamic_cast<CDVDInputStreamPVRManager*>(m_pInputStream);
-		if (input)
-		{
-			return input->CanRecord();
-		}
-		else
-			return false;
-	}
-	else
-		return false;
+	return false;
 }
 
 bool CGstPlayer::IsRecording()
 {
-	if(m_pInputStream->IsStreamType(DVDSTREAM_TYPE_PVRMANAGER))
-	{
-		CDVDInputStreamPVRManager* input = dynamic_cast<CDVDInputStreamPVRManager*>(m_pInputStream);
-		if (input)
-		{
-			return input->IsRecording();
-		}
-		else
-			return false;
-	}
-	else
-		return false;
+	return false;
 }
 
 void CGstPlayer::SetSpeed(float iSpeed)
 {
 	CLog::Log(LOGNOTICE, "CGstPlayer::%s: %f", __FUNCTION__, iSpeed);
-	CDataCacheCore::GetInstance().SetSpeed(1.0, speed);
 }
 
 void CGstPlayer::ShowOSD(bool bOnoff)
@@ -572,22 +481,6 @@ void CGstPlayer::SetVolume(float volume)
 void CGstPlayer::SetMute(bool bOnOff)
 {
 	m_VideoPlayerAudio->SetMute(bOnOff);
-}
-
-bool CGstPlayer::ShowPVRChannelInfo()
-{
-  bool bReturn(false);
-
-  if (CSettings::GetInstance().GetInt(CSettings::SETTING_PVRMENU_DISPLAYCHANNELINFO) > 0)
-  {
-    CServiceBroker::GetPVRManager().ShowPlayerInfo(CSettings::GetInstance().GetInt(CSettings::SETTING_PVRMENU_DISPLAYCHANNELINFO));
-
-    bReturn = true;
-  }
-
-  CServiceBroker::GetDataCacheCore().SignalVideoInfoChange();
-  CServiceBroker::GetDataCacheCore().SignalAudioInfoChange();
-  return bReturn;
 }
 
 int CGstPlayer::GetAudioStreamCount()
@@ -658,102 +551,19 @@ void CGstPlayer::OnPlaybackStarted()
 			fclose(f);
 		}
 	}
-	m_callback.OnPlayBackStarted();
+	m_callback.OnPlayBackStarted(m_item);
 	//m_ready.Set();
 }
 
 bool CGstPlayer::OnAction(const CAction &action)
 {
 	CLog::Log(LOGNOTICE, "CGstPlayer::%s: id=%d", __FUNCTION__, action.GetID());
-	switch (action.GetID())
-	{
-		case ACTION_SHOW_OSD:
-			CLog::Log(LOGNOTICE, "CGstPlayer::%s: ACTION_SHOW_OSD", __FUNCTION__);
-			break;
-		case ACTION_SHOW_VIDEOMENU:
-			CLog::Log(LOGNOTICE, "CGstPlayer::%s: ACTION_SHOW_VIDEOMENU", __FUNCTION__);
-			break;
-		case ACTION_PLAYER_PROCESS_INFO:
-			CLog::Log(LOGNOTICE, "CGstPlayer::%s: ACTION_PLAYER_PROCESS_INFO", __FUNCTION__);
-			break;
-		case ACTION_SELECT_ITEM:
-			CLog::Log(LOGNOTICE, "CGstPlayer::%s: ACTION_SELECT_ITEM", __FUNCTION__);
-			break;
-		case ACTION_CHANNEL_SWITCH:
-		{
-			CLog::Log(LOGNOTICE, "CGstPlayer::%s: ACTION_CHANNEL_SWITCH", __FUNCTION__);
-			if(m_pInputStream->IsStreamType(DVDSTREAM_TYPE_PVRMANAGER))
-			{
-				int channel = (int) action.GetAmount();
-				// Offset from key codes back to button number
-				CDVDInputStreamPVRManager* input = dynamic_cast<CDVDInputStreamPVRManager*>(m_pInputStream);
-				if (input && input->IsOtherStreamHack())
-				{
-					CLog::Log(LOGWARNING, "CGstPlayer::%s: input->IsOtherStreamHack()", __FUNCTION__);
-				}
-				if(input && input->SelectChannelByNumber(channel))
-				{
-					CLog::Log(LOGNOTICE, "CGstPlayer::%s: ACTION_CHANNEL_SWITCH channel=%d", __FUNCTION__, channel);
-				}
-				
-				//g_infoManager.SetDisplayAfterSeek();
-				//CServiceBroker::GetPVRManager().SetChannelPreview(false);
-				ShowPVRChannelInfo();
-				return true;
-			}
-		}
-		break;
-		case ACTION_MOVE_UP:
-		case ACTION_NEXT_ITEM:
-		case ACTION_CHANNEL_UP:
-		{
-			CLog::Log(LOGNOTICE, "CGstPlayer::%s: ACTION_MOVE_UP", __FUNCTION__);
-			if(m_pInputStream->IsStreamType(DVDSTREAM_TYPE_PVRMANAGER))
-			{
-				/* bool bPreview(action.GetID() == ACTION_MOVE_UP && // only up/down shows a preview, all others do switch
-						CSettings::GetInstance().GetBool(CSettings::SETTING_PVRPLAYBACK_CONFIRMCHANNELSWITCH)); */
-				
-				CDVDInputStreamPVRManager* input = dynamic_cast<CDVDInputStreamPVRManager*>(m_pInputStream);
-				if (input)
-				{
-					input->NextChannel(false);
-				}
-				//g_infoManager.SetDisplayAfterSeek();
-				//CServiceBroker::GetPVRManager().SetChannelPreview(false);
-				ShowPVRChannelInfo();
-				return true;
-			}
-		}
-		break;
-		case ACTION_MOVE_DOWN:
-		case ACTION_PREV_ITEM:
-		case ACTION_CHANNEL_DOWN:
-		{
-			CLog::Log(LOGNOTICE, "CGstPlayer::%s: ACTION_MOVE_DOWN", __FUNCTION__);
-			if(m_pInputStream->IsStreamType(DVDSTREAM_TYPE_PVRMANAGER))
-			{
-				/* bool bPreview(action.GetID() == ACTION_MOVE_DOWN && // only up/down shows a preview, all others do switch
-					CSettings::GetInstance().GetBool(CSettings::SETTING_PVRPLAYBACK_CONFIRMCHANNELSWITCH)); */
-				
-				CDVDInputStreamPVRManager* input = dynamic_cast<CDVDInputStreamPVRManager*>(m_pInputStream);
-				if (input)
-				{
-					input->PrevChannel(false);
-				}
-				//g_infoManager.SetDisplayAfterSeek();
-				//CServiceBroker::GetPVRManager().SetChannelPreview(false);
-				ShowPVRChannelInfo();
-				return true;
-			}
-		}
-		break;
-	}
 	return false;
 }
 
 void CGstPlayer::GetVideoResolution(unsigned int &width, unsigned int &height)
 {
-	RESOLUTION_INFO res = g_graphicsContext.GetResInfo();
+	RESOLUTION_INFO res = CServiceBroker::GetWinSystem()->GetGfxContext().GetResInfo();
 	width = res.iWidth;
 	height = res.iHeight;
 	

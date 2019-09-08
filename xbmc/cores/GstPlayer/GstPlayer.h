@@ -51,93 +51,89 @@ class CGstPlayer : public IPlayer, public CThread, public IVideoPlayer, public I
 {
 public:
 
-	virtual int OnDVDNavResult(void* pData, int iMessage) { return 0; };
-	virtual void GetVideoResolution(unsigned int &width, unsigned int &height);
+	int OnDiscNavResult(void* pData, int iMessage) { return 0; };
+	void GetVideoResolution(unsigned int &width, unsigned int &height);
 	
 	explicit CGstPlayer(IPlayerCallback& callback);
 	~CGstPlayer() override;
-	virtual bool Initialize(TiXmlElement* pConfig);
-	virtual bool OpenFile(const CFileItem& file, const CPlayerOptions &options);
-	virtual bool CloseFile(bool reopen = false);
+	bool Initialize(TiXmlElement* pConfig);
+	bool OpenFile(const CFileItem& file, const CPlayerOptions &options) override;
+	bool CloseFile(bool reopen = false) override;
 	
-	//virtual bool IsPlaying() const { return m_isPlaying; };
-	virtual bool IsPlaying() const;
-	virtual void Pause() override;
-	virtual bool HasVideo() const;
-	virtual bool HasAudio() const;
-	virtual void ToggleOSD(); // empty
-	virtual void SwitchToNextLanguage();
-	virtual void ToggleSubtitles();
-	virtual bool CanSeek();
-	virtual void Seek(bool bPlus, bool bLargeStep, bool bChapterOverride);
-	virtual void SeekPercentage(float iPercent);
-	virtual float GetPercentage();
-	virtual void SetVolume(float volume);
-	virtual void SetMute(bool bOnOff);
-	
-	virtual bool SwitchChannel(const CPVRChannelPtr &channel);
+	//bool IsPlaying() const { return m_isPlaying; };
+	bool IsPlaying() const;
+	void Pause() override;
+	bool HasVideo() const;
+	bool HasAudio() const;
+	void ToggleOSD(); // empty
+	void SwitchToNextLanguage();
+	void ToggleSubtitles();
+	bool CanSeek();
+	void Seek(bool bPlus, bool bLargeStep, bool bChapterOverride);
+	void SeekPercentage(float iPercent);
+	float GetPercentage();
+	void SetVolume(float volume);
+	void SetMute(bool bOnOff);
 
-	virtual bool HasMenu() const { return true; };
-	virtual void SetDynamicRangeCompression(long drc) {}
-	virtual void SetContrast(bool bPlus) {}
-	virtual void SetBrightness(bool bPlus) {}
-	virtual void SetHue(bool bPlus) {}
-	virtual void SetSaturation(bool bPlus) {}
-	virtual void SwitchToNextAudioLanguage();
-	virtual bool CanRecord();
-	virtual bool IsRecording();
-	virtual bool Record(bool bOnOff) { return false; }
-	virtual void SetAVDelay(float fValue = 0.0f);
-	virtual float GetAVDelay();
+	bool HasMenu() const { return true; };
+	void SetDynamicRangeCompression(long drc) {}
+	void SetContrast(bool bPlus) {}
+	void SetBrightness(bool bPlus) {}
+	void SetHue(bool bPlus) {}
+	void SetSaturation(bool bPlus) {}
+	void SwitchToNextAudioLanguage();
+	bool CanRecord();
+	bool IsRecording();
+	bool Record(bool bOnOff) { return false; }
+	void SetAVDelay(float fValue = 0.0f);
+	float GetAVDelay();
 	
-	virtual void FrameMove();
-	virtual void Render(bool clear, uint32_t alpha, bool gui);
-	virtual void FlushRenderer() { CLog::Log(LOGNOTICE, "%s: ", __FUNCTION__ ); };
+	void FrameMove();
+	void Render(bool clear, uint32_t alpha, bool gui);
+	void FlushRenderer() { CLog::Log(LOGNOTICE, "%s: ", __FUNCTION__ ); };
 	
-	virtual void SetRenderViewMode(int mode) { CLog::Log(LOGNOTICE, "%s: mode=%d", __FUNCTION__, mode); };
-	virtual float GetRenderAspectRatio();
-	virtual void TriggerUpdateResolution() { CLog::Log(LOGNOTICE, "%s: ", __FUNCTION__ ); };
+	void SetRenderViewMode(int mode) { CLog::Log(LOGNOTICE, "%s: mode=%d", __FUNCTION__, mode); };
+	float GetRenderAspectRatio();
+	void TriggerUpdateResolution() { CLog::Log(LOGNOTICE, "%s: ", __FUNCTION__ ); };
 	
-	virtual bool IsRenderingVideo() { return true; };
-	virtual bool IsRenderingGuiLayer() { return true; };
-	virtual bool IsRenderingVideoLayer() { return true; };
+	bool IsRenderingVideo() { return true; };
+	bool IsRenderingGuiLayer() { return true; };
+	bool IsRenderingVideoLayer() { return true; };
 	
-	virtual void SetSubTitleDelay(float fValue = 0.0f);
-	virtual float GetSubTitleDelay();
+	void SetSubTitleDelay(float fValue = 0.0f);
+	float GetSubTitleDelay();
 
-	virtual void SeekTime(int64_t iTime);
-	virtual bool SeekTimeRelative(int64_t iTime);
+	void SeekTime(int64_t iTime);
+	bool SeekTimeRelative(int64_t iTime);
 	
-	virtual int64_t GetTime();
-	virtual int64_t GetTotalTime();
-	virtual void SetSpeed(float iSpeed) override;
-	virtual void ShowOSD(bool bOnoff);
-	virtual void DoAudioWork() {};
+	int64_t GetTime();
+	int64_t GetTotalTime();
+	void SetSpeed(float iSpeed) override;
+	void ShowOSD(bool bOnoff);
+	void DoAudioWork() {};
 	
-	virtual std::string GetPlayerState();
-	virtual bool SetPlayerState(const std::string& state);
+	std::string GetPlayerState();
+	bool SetPlayerState(const std::string& state);
 	
-	virtual int GetAudioStreamCount();
-	virtual int GetVideoStreamCount();
-	virtual int GetSubtitleCount();
+	int GetAudioStreamCount();
+	int GetVideoStreamCount();
+	int GetSubtitleCount();
 	
-	virtual int GetAudioStream();
-	virtual int GetVideoStream();
-	virtual int GetSubtitle();
+	int GetAudioStream();
+	int GetVideoStream();
+	int GetSubtitle();
 	
-	virtual bool SupportsTempo() { return m_canTempo; };
+	bool SupportsTempo() { return m_canTempo; };
 	
 	void OnPlaybackStarted();
 
 private:
 
-	virtual void Process();
-	virtual bool OnAction(const CAction &action);
+	void Process();
+	bool OnAction(const CAction &action);
 	
 	void CreatePlayers();
 	void DestroyPlayers();
-	
-	bool ShowPVRChannelInfo();
 	
 	bool m_bAbortRequest;
 	bool m_isPlaying;
@@ -166,5 +162,5 @@ protected:
 	
 	CFileItem m_item;
 	std::atomic_bool m_canTempo;
-	CDVDInputStream* m_pInputStream;  // input stream for current playing file
+	std::shared_ptr<CDVDInputStream> m_pInputStream;  // input stream for current playing file
 };
