@@ -26,7 +26,7 @@ find_library(GOBJECT_LIBRARY NAMES gobject-2.0
 find_library(GSTREAMER_LIBRARY NAMES gstreamer-1.0
                          PATHS ${PC_GSTREAMER_LIBDIR})
 find_library(GSTREAMERPBUTILS_LIBRARY NAMES gstreamer-pbutils-1.0
-                         PATHS ${PC_GSTREAMERPBUTIL_LIBDIR})
+                         PATHS ${PC_GSTREAMERPBUTILS_LIBDIR})
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(Gstreamer REQUIRED_VARS GSTREAMER_LIBRARY GSTREAMER_INCLUDE_DIR)
