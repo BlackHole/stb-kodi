@@ -38,6 +38,17 @@
 
 CGstPlayerAudio::CGstPlayerAudio(CProcessInfo &processInfo): m_processInfo(processInfo)
 {
+	CLog::Log(LOGNOTICE, "CGstPlayerAudio::%s", __FUNCTION__ );
+	// magic value used when omxplayer is playing - want sink to be disabled
+	AEAudioFormat m_format;
+	m_format.m_dataFormat = AE_FMT_RAW;
+	m_format.m_streamInfo.m_type = CAEStreamInfo::STREAM_TYPE_AC3;
+	m_format.m_streamInfo.m_sampleRate = 16000;
+	m_format.m_streamInfo.m_channels = 2;
+	m_format.m_sampleRate = 16000;
+	m_format.m_frameSize = 1;
+	m_pAudioStream = CServiceBroker::GetActiveAE()->MakeStream(m_format);
+
 	m_processInfo.ResetAudioCodecInfo();
 #if 0
 	CServiceBroker::GetActiveAE()->Suspend();
@@ -63,6 +74,9 @@ CGstPlayerAudio::~CGstPlayerAudio()
 		CLog::Log(LOGFATAL, "CGstPlayerAudio::%s: Failed to restart AudioEngine after return from player",__FUNCTION__);
 	}
 #endif
+	if (m_pAudioStream)
+		CServiceBroker::GetActiveAE()->FreeStream(m_pAudioStream, true);
+	CLog::Log(LOGNOTICE, "CGstPlayerAudio::%s", __FUNCTION__ );
 }
 
 void CGstPlayerAudio::SetVolume(float volume)

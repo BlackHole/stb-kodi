@@ -22,7 +22,7 @@
 
 #include "threads/Thread.h"
 
-
+#include "cores/AudioEngine/Interfaces/AEStream.h"
 #include "cores/VideoPlayer/Process/ProcessInfo.h"
 
 class CGstPlayerAudio
@@ -37,6 +37,7 @@ private:
 	int openMixer();
 	int checkVolume(int vol);
 	void closeMixer(int fd);
+	IAEStream *m_pAudioStream;
 	
 protected:
 	CProcessInfo &m_processInfo;

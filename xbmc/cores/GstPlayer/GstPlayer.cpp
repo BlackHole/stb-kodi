@@ -84,25 +84,27 @@ CGstPlayer::CGstPlayer(IPlayerCallback& callback)
 	m_processInfo.reset(CProcessInfo::CreateInstance());
 	m_processInfo->SetSpeed(1.0);
 	m_processInfo->SetTempo(1.0);
-	
-	CServiceBroker::GetActiveAE()->Suspend();
-	  
-	while (!CServiceBroker::GetActiveAE()->IsSuspended())
-		Sleep(10);
+
+	CLog::Log(LOGNOTICE, "CGstPlayer::%s", __FUNCTION__ );
 	
 	CreatePlayers();
+	CLog::Log(LOGNOTICE, "CGstPlayer::%s", __FUNCTION__ );
 }
 
 void CGstPlayer::CreatePlayers()
 {
+	CLog::Log(LOGNOTICE, "CGstPlayer::%s", __FUNCTION__ );
 	m_VideoPlayerAudio = new CGstPlayerAudio(*m_processInfo);
 	m_VideoPlayerVideo = new CGstPlayerVideo(this, *m_processInfo);
+	CLog::Log(LOGNOTICE, "CGstPlayer::%s", __FUNCTION__ );
 }
 
 void CGstPlayer::DestroyPlayers()
 {
+	CLog::Log(LOGNOTICE, "CGstPlayer::%s", __FUNCTION__ );
 	delete m_VideoPlayerVideo;
 	delete m_VideoPlayerAudio;
+	CLog::Log(LOGNOTICE, "CGstPlayer::%s", __FUNCTION__ );
 }
 
 CGstPlayer::~CGstPlayer()
