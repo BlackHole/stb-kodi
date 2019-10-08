@@ -8,6 +8,14 @@
     <player name="VideoPlayer" /> placeholder for MPlayer
     <player name="PAPlayer" audio="true" />
     -->
+    <player name="E2Player" type="ExternalPlayer" audio="false" video="true">
+      <filename>kodiext</filename>
+      <args>-U "{1}" -S "{3}" -P "$PPID"</args>
+      <filenamemeta>/tmp/kodiextin.json</filenamemeta>
+      <hidexbmc>true</hidexbmc>
+      <hideconsole>true</hideconsole>
+      <warpcursor>none</warpcursor>
+    </player>
   </players>
 
   <rules name="system rules">

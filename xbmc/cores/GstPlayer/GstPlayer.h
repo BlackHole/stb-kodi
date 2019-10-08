@@ -30,6 +30,7 @@
 #include "threads/Thread.h"
 #include "utils/log.h"
 #include "FileItem.h"
+#include "guilib/DispResource.h"
 
 #include "cores/VideoPlayer/IVideoPlayer.h"
 #include "cores/VideoPlayer/DVDInputStreams/DVDInputStream.h"
@@ -47,7 +48,12 @@ public:
 	virtual void OnPlaybackStarted() = 0;
 };
 
-class CGstPlayer : public IPlayer, public CThread, public IVideoPlayer, public IGstPlayerCallback
+class CGstPlayer : public IPlayer,
+		   public CThread,
+		   public IVideoPlayer,
+		   public IGstPlayerCallback,
+		   public IDispResource,
+		   public IRenderLoop
 {
 public:
 
