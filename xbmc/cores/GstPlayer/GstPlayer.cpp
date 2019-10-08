@@ -27,6 +27,7 @@
 #include "FileItem.h"
 #include "Application.h"
 #include "ServiceBroker.h"
+#include "messaging/ApplicationMessenger.h"
 #include "CompileInfo.h"
 #include "GUIInfoManager.h"
 #include "URL.h"
@@ -61,6 +62,7 @@
 #include "storage/MediaManager.h"
 
 //using namespace PVR;
+using namespace KODI::MESSAGING;
 using namespace XFILE;
 
 // Default time after which the item's playcount is incremented
@@ -82,12 +84,20 @@ CGstPlayer::CGstPlayer(IPlayerCallback& callback)
 	m_pInputStream = nullptr;
 	m_canTempo = false;
 	m_processInfo.reset(CProcessInfo::CreateInstance());
+	m_processInfo->SetDataCache(&CServiceBroker::GetDataCacheCore());
 	m_processInfo->SetSpeed(1.0);
 	m_processInfo->SetTempo(1.0);
+	m_processInfo->SetVideoRender(true); //molto importante per kodi 18
 
 	CLog::Log(LOGNOTICE, "CGstPlayer::%s", __FUNCTION__ );
 	
 	CreatePlayers();
+	CServiceBroker::GetWinSystem()->Register(this);
+
+	CServiceBroker::GetWinSystem()->RegisterRenderLoop(this); //From Decompiled
+
+	CServiceBroker::GetWinSystem()->Hide();
+
 	CLog::Log(LOGNOTICE, "CGstPlayer::%s", __FUNCTION__ );
 }
 
@@ -109,6 +119,10 @@ void CGstPlayer::DestroyPlayers()
 
 CGstPlayer::~CGstPlayer()
 {
+	CServiceBroker::GetWinSystem()->UnregisterRenderLoop(this);
+
+	CServiceBroker::GetWinSystem()->Unregister(this);
+
 	CloseFile();
 	
 	m_pInputStream.reset();
@@ -287,6 +301,8 @@ void CGstPlayer::Process()
 
 	m_playbackStartTime = XbmcThreads::SystemClockMillis();
 	m_time = 0;
+
+	CApplicationMessenger::GetInstance().PostMsg(TMSG_SWITCHTOFULLSCREEN);
 	
 	//m_callback.OnPlayBackStarted();
 
@@ -554,6 +570,7 @@ void CGstPlayer::OnPlaybackStarted()
 		}
 	}
 	m_callback.OnPlayBackStarted(m_item);
+	m_callback.OnAVStarted(m_item);
 	//m_ready.Set();
 }
 
