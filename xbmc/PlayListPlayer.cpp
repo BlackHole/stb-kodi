@@ -862,6 +862,10 @@ void PLAYLIST::CPlayListPlayer::OnApplicationMessage(KODI::MESSAGING::ThreadMess
     // first check if we were called from the PlayFile() function
     if (pMsg->lpVoid && pMsg->param2 == 0)
     {
+      // Discard the current playlist, if TMSG_MEDIA_PLAY gets posted with just a single item.
+      // Otherwise items may fail to play, when started while a playlist is playing.
+      Reset();
+
       CFileItem *item = static_cast<CFileItem*>(pMsg->lpVoid);
       g_application.PlayFile(*item, "", pMsg->param1 != 0);
       delete item;
@@ -898,7 +902,8 @@ void PLAYLIST::CPlayListPlayer::OnApplicationMessage(KODI::MESSAGING::ThreadMess
           // resolve only for a maximum of 5 times to avoid deadlocks (plugin:// paths can resolve to plugin:// paths)
           for (int i = 0; URIUtils::IsPlugin(item->GetDynPath()) && i < 5; ++i)
           {
-            XFILE::CPluginDirectory::GetPluginResult(item->GetDynPath(), *item, true);
+            if (!XFILE::CPluginDirectory::GetPluginResult(item->GetDynPath(), *item, true))
+              return;
           }
           if (item->IsAudio() || item->IsVideo())
             Play(item, pMsg->strParam);

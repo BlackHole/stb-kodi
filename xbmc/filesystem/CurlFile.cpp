@@ -1011,8 +1011,8 @@ bool CCurlFile::Open(const CURL& url)
     std::string error;
     if (m_httpresponse >= 400 && CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->CanLogComponent(LOGCURL))
     {
-      error.resize(256);
-      ReadString(&error[0], 255);
+      error.resize(4096);
+      ReadString(&error[0], 4095);
     }
 
     CLog::Log(LOGERROR, "CCurlFile::Open failed with code %li for %s:\n%s", m_httpresponse, redactPath.c_str(), error.c_str());
@@ -1353,6 +1353,7 @@ int64_t CCurlFile::Seek(int64_t iFilePosition, int iWhence)
 
   m_state->m_filePos = nextPos;
   m_state->m_sendRange = true;
+  m_state->m_bRetry = m_allowRetry;
 
   long response = m_state->Connect(m_bufferSize);
   if(response < 0 && (m_state->m_fileSize == 0 || m_state->m_fileSize != m_state->m_filePos))
